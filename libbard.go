@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -30,10 +29,9 @@ type Response struct {
 	Candidates []Candidate `json:"candidates"`
 }
 
-func getBardCompletion(content string) (string, error) {
+func getBardCompletion(prompt string, config Config, model string) (string, error) {
 	// Create the request body
-	prompt := Prompt{Text: content}
-	data := map[string]Prompt{"prompt": prompt}
+	data := map[string]Prompt{"prompt": Prompt{Text: prompt}}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal request body: %v", err)
@@ -68,16 +66,7 @@ func getBardCompletion(content string) (string, error) {
 	return "", fmt.Errorf("no candidate output found in response")
 }
 
-func hasStdinInput() bool {
-	info, err := os.Stdin.Stat()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return info.Mode()&os.ModeCharDevice == 0
-}
-
-func main() {
+func main3() {
 	var prompt string
 	if len(os.Args) > 1 {
 		prompt = os.Args[1]
