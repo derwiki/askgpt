@@ -1,14 +1,12 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 )
 
 type Prompt struct {
@@ -31,7 +29,7 @@ type Response struct {
 
 func getBardCompletion(prompt string, config Config, model string) (string, error) {
 	// Create the request body
-	data := map[string]Prompt{"prompt": Prompt{Text: prompt}}
+	data := map[string]Prompt{"prompt": {Text: prompt}}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal request body: %v", err)
@@ -64,32 +62,4 @@ func getBardCompletion(prompt string, config Config, model string) (string, erro
 	}
 
 	return "", fmt.Errorf("no candidate output found in response")
-}
-
-func main3() {
-	var prompt string
-	if len(os.Args) > 1 {
-		prompt = os.Args[1]
-	} else if hasStdinInput() {
-		scanner := bufio.NewScanner(os.Stdin)
-
-		scanner.Split(bufio.ScanBytes)
-		var buffer bytes.Buffer
-		for scanner.Scan() {
-			buffer.Write(scanner.Bytes())
-		}
-
-		prompt = strings.TrimSpace(buffer.String())
-	} else {
-		fmt.Println("error: No prompt found in args or STDIN")
-		return
-	}
-
-	output, err := getBardCompletion(prompt)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	fmt.Println(output)
 }

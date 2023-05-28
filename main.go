@@ -28,6 +28,8 @@ func main() {
 	// Define your config
 	config := Config{}
 
+	// TODO(derwiki) if a model is specified, only call that model and exit
+
 	// Define your jobs
 	jobs := []Job{
 		{

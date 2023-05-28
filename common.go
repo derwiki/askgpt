@@ -69,6 +69,57 @@ func hasStdinInput() bool {
 	return info.Mode()&os.ModeCharDevice == 0
 }
 
+func refineAnswers() {
+	//refine := fmt.Sprintf("Which of the following answers is best? \n\n%s\n\n%s\n\n%s\n\n%s", gpt3TurboRes, gpt3Davinci003Res, gpt3Davinci002Res, textDavinci002Res)
+	// refined := libopenai.getChatCompletions(refine, config, openai.GPT4)
+	fmt.Println("\n> Which of those answers is best?")
+	// fmt.Println(refined)
+}
+
+func printUsage() {
+	fmt.Println(`
+Usage:
+./chatgpt [PROMPT]
+echo "PROMPT" | ./chatgpt
+cat chatgpt.go | PROMPT_PREFIX="Improve this program" ./chatgpt
+
+Description:
+A Go command-line interface to communicate with OpenAI's ChatGPT API.
+This program sends a prompt or question to the ChatGPT API for several models,
+prints the generated response for each, and then sends all the responses to
+gpt-4 to ask which is best.
+
+Required Options:
+PROMPT              The question or prompt to send to the ChatGPT API.
+
+Environment Variables:
+OPENAI_API_KEY      Your OpenAI API key.
+MAX_TOKENS          The maximum number of tokens to generate in the response. (default: 100)
+PROMPT_PREFIX       A prefix to add to each prompt.
+GPT_MODEL           The model to use. If not specified, all models will be used.
+
+Example:
+./chatgpt "What is the capital of Ohio?"
+
+> Chat Completion (gpt-3.5-turbo):
+The capital of Ohio is Columbus.
+
+> Chat Completion (text-davinci-003):
+The capital of Ohio is Columbus.
+
+> Chat Completion (text-davinci-002):
+The capital of Ohio is Columbus.
+
+> Text Completion (da-vinci-002):
+The capital of Ohio is Columbus.
+
+> Chat Completion (gpt-4):
+The capital of Ohio is Columbus.
+
+> Which of those answers is best?
+All of the answers are the same and correct.`)
+}
+
 func getPrompt() string {
 	config, err := loadConfig()
 	var prompt string

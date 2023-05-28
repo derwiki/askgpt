@@ -1,14 +1,12 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
 	openai "github.com/sashabaranov/go-openai"
@@ -100,143 +98,4 @@ func getChatCompletions(content string, config Config, model string) (string, er
 	}
 
 	return resp.Choices[0].Message.Content, nil
-}
-
-func main2() {
-	config, err := loadConfig()
-
-	var prompt string
-	if err != nil {
-		fmt.Println("error: Fatal occurred in loadConfig")
-	} else if len(os.Args) > 1 {
-		prompt = os.Args[1]
-	} else if hasStdinInput() {
-		scanner := bufio.NewScanner(os.Stdin)
-
-		scanner.Split(bufio.ScanBytes)
-		var buffer bytes.Buffer
-		for scanner.Scan() {
-			buffer.Write(scanner.Bytes())
-		}
-
-		prompt = strings.TrimSpace(buffer.String())
-	} else {
-		fmt.Println("error: No prompt found in args or STDIN")
-		printUsage()
-		return
-	}
-
-	// Create channels for the API responses
-	gpt3TurboCh := make(chan string)
-	gpt3Davinci003Ch := make(chan string)
-	gpt3Davinci002Ch := make(chan string)
-	textDavinci002Ch := make(chan string)
-	gpt4Ch := make(chan string)
-
-	// if a model is specified, only call that model and exit
-	if config.Model != "" {
-		if config.Model == openai.GPT3Dot5Turbo {
-			fmt.Println(getChatCompletions(prompt, config, openai.GPT3Dot5Turbo))
-		} else if config.Model == openai.GPT3TextDavinci003 {
-			fmt.Println(getChatCompletions(prompt, config, openai.GPT3TextDavinci003))
-		} else if config.Model == openai.GPT3TextDavinci002 {
-			fmt.Println(getChatCompletions(prompt, config, openai.GPT3TextDavinci002))
-		} else if config.Model == "text-davinci-002" {
-			fmt.Println(getTextCompletion(prompt, config))
-		} else if config.Model == openai.GPT4 {
-			fmt.Println(getChatCompletions(prompt, config, openai.GPT4))
-		}
-		return
-	}
-
-	// Launch goroutines to call the API functions in parallel
-	go func() {
-		gpt3TurboCh <- getChatCompletions(prompt, config, openai.GPT3Dot5Turbo)
-	}()
-	go func() {
-		gpt3Davinci003Ch <- getChatCompletions(prompt, config, openai.GPT3TextDavinci003)
-	}()
-	go func() {
-		gpt3Davinci002Ch <- getChatCompletions(prompt, config, openai.GPT3TextDavinci002)
-	}()
-	go func() {
-		textDavinci002Ch <- getTextCompletion(prompt, config)
-	}()
-	go func() {
-		gpt4Ch <- getChatCompletions(prompt, config, openai.GPT4)
-	}()
-
-	// Wait for the API responses from the channels
-	gpt3TurboRes := <-gpt3TurboCh
-	gpt3Davinci003Res := <-gpt3Davinci003Ch
-	gpt3Davinci002Res := <-gpt3Davinci002Ch
-	textDavinci002Res := <-textDavinci002Ch
-	gpt4Res := <-gpt4Ch
-
-	// TODO(derwiki) put this in config
-	verbose := false
-	if verbose {
-		fmt.Println(prompt)
-	}
-	// Print the API responses
-	fmt.Println("\n> Chat Completion (gpt-3.5-turbo):")
-	fmt.Println(gpt3TurboRes)
-	fmt.Println("\n> Chat Completion (text-davinci-003):")
-	fmt.Println(gpt3Davinci003Res)
-	fmt.Println("\n> Chat Completion (text-davinci-002):")
-	fmt.Println(gpt3Davinci002Res)
-	fmt.Println("\n> Text Completion (da-vinci-002):")
-	fmt.Println(textDavinci002Res)
-	fmt.Println("\n> Chat Completion (gpt-4):")
-	fmt.Println(gpt4Res)
-
-	refine := fmt.Sprintf("Which of the following answers is best? \n\n%s\n\n%s\n\n%s\n\n%s", gpt3TurboRes, gpt3Davinci003Res, gpt3Davinci002Res, textDavinci002Res)
-	refined := getChatCompletions(refine, config, openai.GPT4)
-	fmt.Println("\n> Which of those answers is best?")
-	fmt.Println(refined)
-}
-
-func printUsage() {
-	fmt.Println(`
-Usage:
-  ./chatgpt [PROMPT]
-  echo "PROMPT" | ./chatgpt
-  cat chatgpt.go | PROMPT_PREFIX="Improve this program" ./chatgpt
-
-Description:
-  A Go command-line interface to communicate with OpenAI's ChatGPT API.
-  This program sends a prompt or question to the ChatGPT API for several models,
-  prints the generated response for each, and then sends all the responses to
-  gpt-4 to ask which is best.
-
-Required Options:
-  PROMPT              The question or prompt to send to the ChatGPT API.
-
-Environment Variables:
-  OPENAI_API_KEY      Your OpenAI API key.
-  MAX_TOKENS          The maximum number of tokens to generate in the response. (default: 100)
-  PROMPT_PREFIX       A prefix to add to each prompt.
-  GPT_MODEL           The model to use. If not specified, all models will be used.
-
-Example:
-  ./chatgpt "What is the capital of Ohio?"
-
-  > Chat Completion (gpt-3.5-turbo):
-  The capital of Ohio is Columbus.
-  
-  > Chat Completion (text-davinci-003):
-  The capital of Ohio is Columbus.
-  
-  > Chat Completion (text-davinci-002):
-  The capital of Ohio is Columbus.
-  
-  > Text Completion (da-vinci-002):
-  The capital of Ohio is Columbus.
-  
-  > Chat Completion (gpt-4):
-  The capital of Ohio is Columbus.
-  
-  > Which of those answers is best?
-  All of the answers are the same and correct.
-	`)
 }
