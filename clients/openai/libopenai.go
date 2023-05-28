@@ -1,4 +1,4 @@
-package main
+package openai
 
 import (
 	"bytes"
@@ -9,7 +9,8 @@ import (
 	"net/http"
 	"strings"
 
-	openai "github.com/sashabaranov/go-openai"
+	"github.com/derwiki/askgpt/common"
+	"github.com/sashabaranov/go-openai"
 )
 
 const apiBaseURL = "https://api.openai.com/v1/completions"
@@ -29,7 +30,7 @@ type ChatGPTCompletionsRequest struct {
 	MaxTokens int    `json:"max_tokens"`
 }
 
-func getTextCompletion(prompt string, config Config, model string) (string, error) {
+func GetTextCompletion(prompt string, config common.Config, model string) (string, error) {
 	if model == "" {
 		model = "text-davinci-003"
 	}
@@ -73,7 +74,7 @@ func getTextCompletion(prompt string, config Config, model string) (string, erro
 	return strings.TrimSpace(responseBody.Choices[0].Text), nil
 }
 
-func getChatCompletions(content string, config Config, model string) (string, error) {
+func GetChatCompletions(content string, config common.Config, model string) (string, error) {
 	if model == "" {
 		model = openai.GPT3Dot5Turbo
 	}

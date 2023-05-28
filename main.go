@@ -2,31 +2,40 @@ package main
 
 import (
 	"fmt"
+	"github.com/derwiki/askgpt/clients/google"
+	openai_client "github.com/derwiki/askgpt/clients/openai"
+	"github.com/derwiki/askgpt/common"
+	"github.com/sashabaranov/go-openai"
+	"os"
 	"sync"
-
-	openai "github.com/sashabaranov/go-openai"
 )
 
-// Define a Job struct to hold parameters for function
+// Job Define a struct to hold parameters for function
 type Job struct {
 	Prompt string
-	Config Config
+	Config common.Config
 	Model  string
-	Fn     func(string, Config, string) (string, error)
+	Fn     func(string, common.Config, string) (string, error)
 }
 
-// Define a Result struct to hold results from function
+// Result Define a struct to hold results from function
 type Result struct {
 	Output string
 	Err    error
+	Model  string
+	FnName string
 }
 
 func main() {
-	prompt := getPrompt()
-	var wg sync.WaitGroup
+	config, err := common.LoadConfig()
+	if err != nil {
+		fmt.Println("error: Fatal occurred in loadConfig")
+		os.Exit(-1)
+	}
 
-	// Define your config
-	config := Config{}
+	prompt := common.GetPrompt(config)
+
+	var wg sync.WaitGroup
 
 	// TODO(derwiki) if a model is specified, only call that model and exit
 
@@ -36,25 +45,25 @@ func main() {
 			Prompt: prompt,
 			Config: config,
 			Model:  openai.GPT3Dot5Turbo,
-			Fn:     getChatCompletions,
+			Fn:     openai_client.GetChatCompletions,
 		},
 		{
 			Prompt: prompt,
 			Config: config,
 			Model:  openai.GPT4,
-			Fn:     getChatCompletions,
+			Fn:     openai_client.GetChatCompletions,
 		},
 		{
 			Prompt: prompt,
 			Config: config,
 			Model:  "text-davinci-003",
-			Fn:     getTextCompletion,
+			Fn:     openai_client.GetTextCompletion,
 		},
 		{
 			Prompt: prompt,
 			Config: config,
-			Model:  "text-davinci-003",
-			Fn:     getBardCompletion,
+			Model:  "bard",
+			Fn:     google.GetBardCompletion,
 		},
 	}
 
@@ -65,7 +74,7 @@ func main() {
 		go func(j Job) {
 			defer wg.Done()
 			output, err := j.Fn(j.Prompt, j.Config, j.Model)
-			results <- Result{Output: output, Err: err}
+			results <- Result{Output: output, Err: err, Model: j.Model, FnName: "foo"}
 		}(job)
 	}
 
@@ -75,6 +84,8 @@ func main() {
 	}()
 
 	for result := range results {
-		fmt.Println(result)
+		fmt.Println(result.Model)
+		fmt.Println(result.Output)
+		fmt.Println("----------")
 	}
 }

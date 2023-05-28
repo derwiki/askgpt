@@ -1,12 +1,12 @@
-package main
+package google
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/derwiki/askgpt/common"
 	"io/ioutil"
 	"net/http"
-	"os"
 )
 
 type Prompt struct {
@@ -27,7 +27,7 @@ type Response struct {
 	Candidates []Candidate `json:"candidates"`
 }
 
-func getBardCompletion(prompt string, config Config, model string) (string, error) {
+func GetBardCompletion(prompt string, config common.Config, model string) (string, error) {
 	// Create the request body
 	data := map[string]Prompt{"prompt": {Text: prompt}}
 	jsonData, err := json.Marshal(data)
@@ -36,8 +36,7 @@ func getBardCompletion(prompt string, config Config, model string) (string, erro
 	}
 
 	// Send POST request to the API endpoint
-	BardApiKey := os.Getenv("BARDAI_API_KEY")
-	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=%s", BardApiKey)
+	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=%s", config.BardApiKey)
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return "", fmt.Errorf("failed to send POST request: %v", err)

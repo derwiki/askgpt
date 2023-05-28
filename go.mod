@@ -1,4 +1,4 @@
-module github.com/derwiki/go-chatgpt
+module github.com/derwiki/askgpt
 
 go 1.20
 

@@ -1,4 +1,4 @@
-package main
+package common
 
 import (
 	"bufio"
@@ -19,7 +19,7 @@ type Config struct {
 	Model        string
 }
 
-func loadConfig() (Config, error) {
+func LoadConfig() (Config, error) {
 	config := Config{}
 
 	config.PromptPrefix = os.Getenv("PROMPT_PREFIX")
@@ -120,13 +120,8 @@ The capital of Ohio is Columbus.
 All of the answers are the same and correct.`)
 }
 
-func getPrompt() string {
-	config, err := loadConfig()
+func GetPrompt(config Config) string {
 	var prompt string
-	if err != nil {
-		fmt.Println("error: Fatal occurred in loadConfig")
-		os.Exit(-1)
-	}
 
 	if len(os.Args) > 1 {
 		prompt = os.Args[1]
