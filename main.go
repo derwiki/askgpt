@@ -35,45 +35,26 @@ func main() {
 
 	var wg sync.WaitGroup
 
+	var llmFuncMap = map[string]func(string, common.Config, string) (string, error){
+		openai.GPT3Dot5Turbo: openai_client.GetChatCompletions,
+		openai.GPT4:          openai_client.GetChatCompletions,
+		"text-davinci-003":   openai_client.GetTextCompletion,
+		"bard":               google.GetBardCompletion,
+	}
+
 	var llmRequests []LLMRequest
 
 	fmt.Println("Loading LLM_MODELS: ", config.LLMModels)
 	for _, model := range config.LLMModels {
-		if model == openai.GPT3Dot5Turbo {
-			llmRequests = append(llmRequests,
-				LLMRequest{
-					Prompt: prompt,
-					Config: config,
-					Model:  openai.GPT3Dot5Turbo,
-					Fn:     openai_client.GetChatCompletions,
-				})
-		}
-		if model == openai.GPT4 {
-			llmRequests = append(llmRequests,
-				LLMRequest{
-					Prompt: prompt,
-					Config: config,
-					Model:  openai.GPT4,
-					Fn:     openai_client.GetChatCompletions,
-				})
-		}
-		if model == "text-davinci-003" {
-			llmRequests = append(llmRequests,
-				LLMRequest{
-					Prompt: prompt,
-					Config: config,
-					Model:  "text-davinci-003",
-					Fn:     openai_client.GetTextCompletion,
-				})
-		}
-		if model == "bard" {
-			llmRequests = append(llmRequests,
-				LLMRequest{
-					Prompt: prompt,
-					Config: config,
-					Model:  "bard",
-					Fn:     google.GetBardCompletion,
-				})
+		if fn, ok := llmFuncMap[model]; ok {
+			llmRequests = append(llmRequests, LLMRequest{
+				Prompt: prompt,
+				Config: config,
+				Model:  model,
+				Fn:     fn,
+			})
+		} else {
+			fmt.Printf("Unknown LLM model: %s\n", model)
 		}
 	}
 
