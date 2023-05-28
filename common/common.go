@@ -64,6 +64,7 @@ func hasStdinInput() bool {
 	info, err := os.Stdin.Stat()
 	if err != nil {
 		log.Fatal(err)
+		UsageAndQuit()
 	}
 
 	return info.Mode()&os.ModeCharDevice == 0
@@ -76,48 +77,18 @@ func refineAnswers() {
 	// fmt.Println(refined)
 }
 
-func printUsage() {
-	fmt.Println(`
-Usage:
-./chatgpt [PROMPT]
-echo "PROMPT" | ./chatgpt
-cat chatgpt.go | PROMPT_PREFIX="Improve this program" ./chatgpt
+func UsageAndQuit() {
+	fmt.Println(`UsageAndQuit: askgpt [PROMPT]
 
-Description:
-A Go command-line interface to communicate with OpenAI's ChatGPT API.
-This program sends a prompt or question to the ChatGPT API for several models,
-prints the generated response for each, and then sends all the responses to
-gpt-4 to ask which is best.
+    PROMPT        A string prompt to send to the GPT models, surrounded by quotes if it has spaces.
 
-Required Options:
-PROMPT              The question or prompt to send to the ChatGPT API.
+    Environment variables:
+      PROMPT_PREFIX    A prefix to add to the prompt read from STDIN.
 
-Environment Variables:
-OPENAI_API_KEY      Your OpenAI API key.
-MAX_TOKENS          The maximum number of tokens to generate in the response. (default: 100)
-PROMPT_PREFIX       A prefix to add to each prompt.
-GPT_MODEL           The model to use. If not specified, all models will be used.
-
-Example:
-./chatgpt "What is the capital of Ohio?"
-
-> Chat Completion (gpt-3.5-turbo):
-The capital of Ohio is Columbus.
-
-> Chat Completion (text-davinci-003):
-The capital of Ohio is Columbus.
-
-> Chat Completion (text-davinci-002):
-The capital of Ohio is Columbus.
-
-> Text Completion (da-vinci-002):
-The capital of Ohio is Columbus.
-
-> Chat Completion (gpt-4):
-The capital of Ohio is Columbus.
-
-> Which of those answers is best?
-All of the answers are the same and correct.`)
+    Examples:
+      askgpt "What is the meaning of life?"
+      echo "review this source code" | PROMPT_PREFIX="Generate a code review:" askgpt`)
+	os.Exit(-1)
 }
 
 func GetPrompt(config Config) string {
@@ -137,8 +108,8 @@ func GetPrompt(config Config) string {
 		prompt = strings.TrimSpace(buffer.String())
 	} else {
 		fmt.Println("error: No prompt found in args or STDIN")
-		printUsage()
-		os.Exit(-1)
+		UsageAndQuit()
 	}
+	// TODO(derwiki) use https://github.com/sugarme/tokenizer to verify token count
 	return config.PromptPrefix + prompt
 }

@@ -6,7 +6,6 @@ import (
 	openai_client "github.com/derwiki/askgpt/clients/openai"
 	"github.com/derwiki/askgpt/common"
 	"github.com/sashabaranov/go-openai"
-	"os"
 	"sync"
 )
 
@@ -23,14 +22,13 @@ type Result struct {
 	Output string
 	Err    error
 	Model  string
-	FnName string
 }
 
 func main() {
 	config, err := common.LoadConfig()
 	if err != nil {
 		fmt.Println("error: Fatal occurred in loadConfig")
-		os.Exit(-1)
+		common.UsageAndQuit()
 	}
 
 	prompt := common.GetPrompt(config)
@@ -74,7 +72,7 @@ func main() {
 		go func(j Job) {
 			defer wg.Done()
 			output, err := j.Fn(j.Prompt, j.Config, j.Model)
-			results <- Result{Output: output, Err: err, Model: j.Model, FnName: "foo"}
+			results <- Result{Output: output, Err: err, Model: j.Model}
 		}(job)
 	}
 
