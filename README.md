@@ -1,10 +1,9 @@
 # askgpt
 
-`askgpt` is a Golang application that fans a ChatGPT prompt out to many LLMs and
-presents each response to the user. It reads a prompt from the first command line argument
-(e.g. a quoted string) or piped from STDIN. PROMPT_PREFIX can be used to add a
-prefix to what is being piped in over STDIN, e.g. 'review this source code: '.
-Only return syntactically valid markdown.
+`askgpt` is a Golang application that fans a ChatGPT prompt out to many LLMs and presents each response to the user. It
+reads a prompt from the first command line argument (e.g. a quoted string) or piped from `STDIN`. `PROMPT_PREFIX` can be
+used to add a prefix to what is being piped in over `STDIN`, e.g. 'review this source code: '. Setting `LLM_MODELS` will
+run on a subset of all available models.
 
 ## Setup
 
@@ -27,6 +26,11 @@ Only return syntactically valid markdown.
    And optionally add a prompt prefix:
    ```
    cat main.go | PROMPT_PREFIX="generate a README.md for this program.\n\nProgram source: ""
+   ```
+   Send to a subset of models:
+   ```
+   LLM_MODELS=gpt-4 ./askgpt "how do I read an environment variable?"
+   LLM_MODELS=gpt-4,gpt-3.5-turbo ./askgpt "how do I read an environment variable?"
    ```
 
 ## Available Models
