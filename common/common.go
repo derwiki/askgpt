@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/sashabaranov/go-openai"
 	"io/ioutil"
 	"log"
 	"os"
@@ -16,7 +17,7 @@ type Config struct {
 	OpenAIApiKey string
 	MaxTokens    int
 	PromptPrefix string
-	Model        string
+	LLMModels    []string
 }
 
 func LoadConfig() (Config, error) {
@@ -44,6 +45,14 @@ func LoadConfig() (Config, error) {
 	}
 	config.BardApiKey = bardAiApiKey
 
+	// read LLM models as an array
+	models := strings.Split(os.Getenv("LLM_MODELS"), ",")
+	if models[0] != "" {
+		config.LLMModels = models
+	} else {
+		config.LLMModels = []string{openai.GPT3Dot5Turbo, openai.GPT4, "text-davinci-003", "bard"}
+	}
+
 	maxTokensStr := os.Getenv("MAX_TOKENS")
 	if maxTokensStr == "" {
 		config.MaxTokens = 100
@@ -54,8 +63,6 @@ func LoadConfig() (Config, error) {
 		}
 		config.MaxTokens = maxTokens
 	}
-
-	config.Model = os.Getenv("GPT_MODEL")
 
 	return config, nil
 }
