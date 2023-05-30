@@ -121,7 +121,8 @@ func GetPrompt(config Config) string {
 		fmt.Println("error: No prompt found in args or STDIN")
 		UsageAndQuit()
 	}
-	PromptModelMax := 8097
+	// TODO(derwiki) make this model specific
+	PromptModelMax := 4097
 	prompt = config.PromptPrefix + prompt
 	prompTokenCount, err := GetTokenCount(prompt)
 	if prompTokenCount > PromptModelMax {
