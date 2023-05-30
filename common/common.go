@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"github.com/pkoukk/tiktoken-go"
 	"github.com/rs/zerolog/log"
@@ -22,6 +23,7 @@ type Config struct {
 	MaxTokens    int
 	PromptPrefix string
 	LLMModels    []string
+	SkipHistory  bool
 }
 
 func LoadConfig() (Config, error) {
@@ -89,24 +91,33 @@ func refineAnswers() {
 }
 
 func UsageAndQuit() {
-	fmt.Println(`UsageAndQuit: askgpt [PROMPT]
-
-    PROMPT        A string prompt to send to the GPT models, surrounded by quotes if it has spaces.
+	fmt.Println(`Usage: askgpt [OPTIONS] PROMPT
+    OPTIONS:
+        --skip-history    Skip reading and writing to the history.
+    PROMPT               A string prompt to send to the GPT models, surrounded by quotes if it has spaces.
 
     Environment variables:
-      PROMPT_PREFIX    A prefix to add to the prompt read from STDIN.
+      PROMPT_PREFIX       A prefix to add to the prompt read from STDIN.
+      OPENAI_API_KEY      API key for OpenAI
+      BARDAI_API_KEY      API key for Bard AI
+      LLM_MODELS          Comma-separated list of LLM models
+      MAX_TOKENS          Maximum number of tokens for a prompt
 
     Examples:
-      askgpt "What is the meaning of life?"
-      echo "review this source code" | PROMPT_PREFIX="Generate a code review:" askgpt`)
+      askgpt "Generate go code to iterate over a list"
+      askgpt "Refactor that generated code to be in a function names Scan()"
+      cat main.go | PROMPT_PREFIX="Generate a code review: " askgpt
+      askgpt --skip-history "Generate go code to iterate over a list"`)
 	os.Exit(-1)
 }
 
 func GetPrompt(config Config) string {
 	var prompt string
 
-	if len(os.Args) > 1 {
-		prompt = os.Args[1]
+	args := flag.Args()
+	log.Info().Msg(fmt.Sprintf("flag.Args(): %s", args))
+	if len(args) > 0 {
+		prompt = args[0]
 	} else if HasStdinInput() {
 		scanner := bufio.NewScanner(os.Stdin)
 
@@ -128,27 +139,32 @@ func GetPrompt(config Config) string {
 	if prompTokenCount > PromptModelMax {
 		panic("token count too long")
 	}
-	lines := HistoryLastNRecords(4)
-	context := ""
-	runningTokenCount := prompTokenCount
-	for i, record := range lines {
-		log.Info().Msg(fmt.Sprintf("i: %d, record: %s", i, record.Line))
 
-		if record.TokenCount+runningTokenCount >= PromptModelMax {
-			// nothing
-		} else {
-			context += record.Line + "\n"
-			runningTokenCount += record.TokenCount
+	if !config.SkipHistory {
+		lines := HistoryLastNRecords(4)
+		context := ""
+		runningTokenCount := prompTokenCount
+		for i, record := range lines {
+			log.Info().Msg(fmt.Sprintf("i: %d, record: %s", i, record.Line))
+
+			if record.TokenCount+runningTokenCount >= PromptModelMax {
+				// nothing
+			} else {
+				context += record.Line + "\n"
+				runningTokenCount += record.TokenCount
+			}
 		}
-	}
-	log.Info().Msg(fmt.Sprintf("runningTokenCount: %d", runningTokenCount))
+		log.Info().Msg(fmt.Sprintf("runningTokenCount: %d", runningTokenCount))
 
-	prompt = context + "\n" + prompt
-	log.Info().Msg("prompt: " + prompt)
-	err = WriteHistory(fmt.Sprintf("Q: %s", prompt))
-	if err != nil {
-		panic("bar")
+		prompt = context + "\n" + prompt
+		err = WriteHistory(config, fmt.Sprintf("Q: %s", prompt))
+		if err != nil {
+			panic("bar")
+		}
+	} else {
+		log.Info().Msg("SkipHistory set, not building history context")
 	}
+	log.Info().Msg("prompt: " + prompt)
 	return prompt
 }
 
@@ -161,7 +177,11 @@ func historyPath() string {
 	return filepath.Join(home, ".askgpt_history")
 }
 
-func WriteHistory(line string) error {
+func WriteHistory(config Config, line string) error {
+	if config.SkipHistory {
+		log.Info().Msg("SkipHistory set, not executing WriteHistory")
+		return nil
+	}
 
 	f, err := os.OpenFile(historyPath(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -246,21 +266,4 @@ func HistoryLastNRecords(n int) []HistoryRecord {
 		buffer = append(buffer, record)
 	}
 	return buffer
-}
-
-func AppendToCsv(line string) error {
-	f, err := os.OpenFile(historyPath(), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	w := csv.NewWriter(f)
-	err = w.Write([]string{line})
-	if err != nil {
-		return err
-	}
-	w.Flush()
-
-	return nil
 }

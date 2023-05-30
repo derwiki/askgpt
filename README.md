@@ -1,11 +1,49 @@
 # askgpt
 
-`askgpt` is a Golang application that fans a ChatGPT prompt out to many LLMs and presents each response to the user. It
-reads a prompt from the first command line argument (e.g. a quoted string) or piped from `STDIN`. `PROMPT_PREFIX` can be
-used to add a prefix to what is being piped in over `STDIN`, e.g. 'review this source code: '. Setting `LLM_MODELS` will
-run on a subset of all available models.
+`askgpt` is a Go application that streams a chat prompt to multiple GPT models and returns their responses to the user. The program reads the prompt from the first command line argument, enclosed in quotes if it has spaces, or from `STDIN`. `PROMPT_PREFIX` can be used to add a prefix to what is being piped in over `STDIN`. `LLM_MODELS` allows the user to specify a subset of all available models to use.
 
-## Setup
+## Usage
+
+```
+Usage: askgpt [OPTIONS] PROMPT
+    OPTIONS:
+        --skip-history  Skip reading and writing to the history. This flag can come before or after the PROMPT on the command line.
+    PROMPT           A string prompt to send to the GPT models.
+
+Environment variables:
+  PROMPT_PREFIX   A prefix to add to the prompt read from STDIN.
+  OPENAI_API_KEY  API key for OpenAI
+  BARDAI_API_KEY  API key for Bard AI
+  LLM_MODELS      Comma-separated list of LLM models
+  MAX_TOKENS      Maximum number of tokens for a prompt
+
+Examples:
+  askgpt "Generate go code to iterate over a list"
+  askgpt "Refactor that generated code to be in a function named Scan()"
+  cat main.go | PROMPT_PREFIX="Generate a code review: " askgpt
+  askgpt --skip-history "Generate go code to iterate over a list"
+```
+
+The `--skip-history` flag can be used to skip reading and writing to the history. It can come before or after the `PROMPT` on the command line.
+
+The program uses a history to provide prior question context to the current prompt, enabling a short-term memory across sessions that feels like a conversational chat.
+
+## Available Models
+
+`askgpt` supports the following GPT-3 models:
+
+- `openai.GPT3Dot5Turbo`
+- `openai.GPT4`
+- `text-davinci-003`
+
+It also supports the `bard` model from Google.
+
+## Output
+
+The program will output each response from the models along with their respective model names.
+The program will also keep a history of all questions asked and answered in `~/.askgpt_history` to provide context going forward for succcessive questions.
+
+## Installation
 
 1. Clone the repository:
    ```
@@ -32,20 +70,6 @@ run on a subset of all available models.
    LLM_MODELS=gpt-4 ./askgpt "how do I read an environment variable?"
    LLM_MODELS=gpt-4,gpt-3.5-turbo ./askgpt "how do I read an environment variable?"
    ```
-
-## Available Models
-
-`askgpt` supports the following GPT-3 models:
-
-- `openai.GPT3Dot5Turbo`
-- `openai.GPT4`
-- `text-davinci-003`
-
-It also supports the `bard` model from Google.
-
-## Output
-
-The program will output each response from the models along with their respective model names.
 
 ## License
 

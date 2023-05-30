@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/derwiki/askgpt/clients/google"
 	openaiclient "github.com/derwiki/askgpt/clients/openai"
@@ -10,6 +11,8 @@ import (
 	"github.com/sashabaranov/go-openai"
 	"sync"
 )
+
+var skipHistory bool
 
 // LLMRequest Define a struct to hold parameters for function
 type LLMRequest struct {
@@ -28,11 +31,17 @@ type LLMResponse struct {
 
 func main() {
 	zerolog.SetGlobalLevel(zerolog.ErrorLevel)
+
+	flag.BoolVar(&skipHistory, "skip-history", false, "If set, history will not be written to or read from.")
+	flag.Parse()
+	log.Info().Msg(fmt.Sprintf("skipHistory: %b", skipHistory))
+
 	config, err := common.LoadConfig()
 	if err != nil {
 		fmt.Println("error: Fatal occurred in loadConfig")
 		common.UsageAndQuit()
 	}
+	config.SkipHistory = skipHistory
 
 	prompt := common.GetPrompt(config)
 
@@ -69,7 +78,7 @@ func main() {
 			defer wg.Done()
 			output, err := j.Fn(j.Prompt, j.Config, j.Model)
 			results <- LLMResponse{Output: output, Err: err, Model: j.Model}
-			err = common.WriteHistory(fmt.Sprintf("A: %s", output))
+			err = common.WriteHistory(config, fmt.Sprintf("A: %s", output))
 		}(llmRequest)
 	}
 
