@@ -5,7 +5,6 @@ import (
 	"github.com/derwiki/askgpt/clients/google"
 	openai_client "github.com/derwiki/askgpt/clients/openai"
 	"github.com/derwiki/askgpt/common"
-	"github.com/pkoukk/tiktoken-go"
 	"github.com/sashabaranov/go-openai"
 	"sync"
 )
@@ -34,14 +33,6 @@ func main() {
 
 	prompt := common.GetPrompt(config)
 
-	encoding := "r50k_base"
-	tke, err := tiktoken.GetEncoding(encoding)
-	if err != nil {
-		err = fmt.Errorf("getEncoding: %v", err)
-		return
-	}
-	numTokens := len(tke.Encode(prompt, nil, nil))
-	fmt.Println(fmt.Sprintf("Number of tokens in prompt: %d", numTokens))
 	var wg sync.WaitGroup
 
 	var llmFuncMap = map[string]func(string, common.Config, string) (string, error){
@@ -75,6 +66,7 @@ func main() {
 			defer wg.Done()
 			output, err := j.Fn(j.Prompt, j.Config, j.Model)
 			results <- LLMResponse{Output: output, Err: err, Model: j.Model}
+			err = common.WriteHistory(fmt.Sprintf("A: %s", output))
 		}(llmRequest)
 	}
 

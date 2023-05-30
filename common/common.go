@@ -3,13 +3,17 @@ package common
 import (
 	"bufio"
 	"bytes"
+	"encoding/csv"
 	"fmt"
+	"github.com/pkoukk/tiktoken-go"
 	"github.com/sashabaranov/go-openai"
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Config struct {
@@ -67,7 +71,7 @@ func LoadConfig() (Config, error) {
 	return config, nil
 }
 
-func hasStdinInput() bool {
+func HasStdinInput() bool {
 	info, err := os.Stdin.Stat()
 	if err != nil {
 		log.Fatal(err)
@@ -103,7 +107,7 @@ func GetPrompt(config Config) string {
 
 	if len(os.Args) > 1 {
 		prompt = os.Args[1]
-	} else if hasStdinInput() {
+	} else if HasStdinInput() {
 		scanner := bufio.NewScanner(os.Stdin)
 
 		scanner.Split(bufio.ScanBytes)
@@ -117,6 +121,145 @@ func GetPrompt(config Config) string {
 		fmt.Println("error: No prompt found in args or STDIN")
 		UsageAndQuit()
 	}
-	// TODO(derwiki) use https://github.com/sugarme/tokenizer to verify token count
-	return config.PromptPrefix + prompt
+	PromptModelMax := 8097
+	prompt = config.PromptPrefix + prompt
+	prompTokenCount, err := GetTokenCount(prompt)
+	if prompTokenCount > PromptModelMax {
+		panic("token count too long")
+	}
+	lines := HistoryLastNRecords(4)
+	context := ""
+	runningTokenCount := prompTokenCount
+	for i, record := range lines {
+		fmt.Println("record", record, "i", i)
+
+		if record.TokenCount+runningTokenCount >= PromptModelMax {
+			// nothing
+		} else {
+			context += record.Line + "\n"
+			runningTokenCount += record.TokenCount
+		}
+	}
+	fmt.Println("runningTokenCount:", runningTokenCount)
+
+	prompt = context + "\n" + prompt
+	fmt.Println("prompt", prompt)
+	err = WriteHistory(fmt.Sprintf("Q: %s", prompt))
+	if err != nil {
+		panic("bar")
+	}
+	return prompt
+}
+
+func historyPath() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	return filepath.Join(home, ".askgpt_history")
+}
+
+func WriteHistory(line string) error {
+
+	f, err := os.OpenFile(historyPath(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	tokenCount, _ := GetTokenCount(line)
+	timestamp := time.Now().Unix()
+	escapedLine := "\"" + strings.ReplaceAll(line, "\"", "\"\"") + "\""
+	buffer := fmt.Sprintf("%d,%d,%s", timestamp, tokenCount, escapedLine)
+
+	w := bufio.NewWriter(f)
+	_, err = fmt.Fprintln(w, buffer)
+	if err != nil {
+		return err
+	}
+	return w.Flush()
+}
+
+func GetTokenCount(line string) (int, error) {
+	encoding := "r50k_base"
+	tke, err := tiktoken.GetEncoding(encoding)
+	if err != nil {
+		err = fmt.Errorf("getEncoding: %v", err)
+		return -1, err
+	}
+	tokens := tke.Encode(line, nil, nil)
+	return len(tokens), nil
+}
+
+type HistoryRecord struct {
+	TimestampSec int
+	TokenCount   int
+	Line         string
+}
+
+func HistoryLastNRecords(n int) []HistoryRecord {
+	// Open the CSV file for reading
+	f, err := os.Open(historyPath())
+	if err != nil {
+		if os.IsNotExist(err) {
+			// Handle file not found error here
+			fmt.Println("History file not found, creating new one.")
+			f, err = os.Create(historyPath())
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			// Handle other errors
+			panic(err)
+		}
+	}
+
+	defer f.Close()
+
+	// Parse the CSV file
+	r := csv.NewReader(f)
+	records, err := r.ReadAll()
+	if err != nil {
+		panic(err)
+	}
+
+	// Print the last n records (or all if there are less than n)
+	if len(records) < n {
+		n = len(records)
+	}
+	var buffer []HistoryRecord
+	for i := len(records) - n; i < len(records); i++ {
+		int1, err := strconv.Atoi(records[i][0])
+		if err != nil {
+			panic(err)
+		}
+		int2, err := strconv.Atoi(records[i][1])
+		if err != nil {
+			panic(err)
+		}
+		str := records[i][2]
+
+		record := HistoryRecord{TimestampSec: int1, TokenCount: int2, Line: str}
+		fmt.Println(record)
+		buffer = append(buffer, record)
+	}
+	return buffer
+}
+
+func AppendToCsv(line string) error {
+	f, err := os.OpenFile(historyPath(), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	w := csv.NewWriter(f)
+	err = w.Write([]string{line})
+	if err != nil {
+		return err
+	}
+	w.Flush()
+
+	return nil
 }
