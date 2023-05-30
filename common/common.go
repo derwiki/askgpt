@@ -70,6 +70,18 @@ func LoadConfig() (Config, error) {
 		config.MaxTokens = maxTokens
 	}
 
+	var skipHistory bool
+	var useGpt4 bool
+	flag.BoolVar(&skipHistory, "skip-history", false, "If set, history will not be written to or read from.")
+	flag.BoolVar(&useGpt4, "gpt4", false, "If set, shortcut to LLM_MODELS=gpt-4")
+	flag.Parse()
+	log.Info().Msg(fmt.Sprintf("skipHistory: %b", skipHistory))
+	log.Info().Msg(fmt.Sprintf("useGpt4: %b", useGpt4))
+	config.SkipHistory = skipHistory
+	if useGpt4 {
+		config.LLMModels = []string{openai.GPT4}
+	}
+
 	return config, nil
 }
 
