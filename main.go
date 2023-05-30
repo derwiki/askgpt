@@ -5,6 +5,7 @@ import (
 	"github.com/derwiki/askgpt/clients/google"
 	openai_client "github.com/derwiki/askgpt/clients/openai"
 	"github.com/derwiki/askgpt/common"
+	"github.com/rs/zerolog"
 	"github.com/sashabaranov/go-openai"
 	"sync"
 )
@@ -25,6 +26,7 @@ type LLMResponse struct {
 }
 
 func main() {
+	zerolog.SetGlobalLevel(zerolog.ErrorLevel)
 	config, err := common.LoadConfig()
 	if err != nil {
 		fmt.Println("error: Fatal occurred in loadConfig")

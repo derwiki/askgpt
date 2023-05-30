@@ -6,9 +6,9 @@ import (
 	"encoding/csv"
 	"fmt"
 	"github.com/pkoukk/tiktoken-go"
+	"github.com/rs/zerolog/log"
 	"github.com/sashabaranov/go-openai"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -74,7 +74,7 @@ func LoadConfig() (Config, error) {
 func HasStdinInput() bool {
 	info, err := os.Stdin.Stat()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 		UsageAndQuit()
 	}
 
@@ -132,7 +132,7 @@ func GetPrompt(config Config) string {
 	context := ""
 	runningTokenCount := prompTokenCount
 	for i, record := range lines {
-		fmt.Println("record", record, "i", i)
+		log.Info().Msg(fmt.Sprintf("i: %d, record: %s", i, record.Line))
 
 		if record.TokenCount+runningTokenCount >= PromptModelMax {
 			// nothing
@@ -141,10 +141,10 @@ func GetPrompt(config Config) string {
 			runningTokenCount += record.TokenCount
 		}
 	}
-	fmt.Println("runningTokenCount:", runningTokenCount)
+	log.Info().Msg(fmt.Sprintf("runningTokenCount: %d", runningTokenCount))
 
 	prompt = context + "\n" + prompt
-	fmt.Println("prompt", prompt)
+	log.Info().Msg("prompt: " + prompt)
 	err = WriteHistory(fmt.Sprintf("Q: %s", prompt))
 	if err != nil {
 		panic("bar")
@@ -155,7 +155,7 @@ func GetPrompt(config Config) string {
 func historyPath() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Println(err)
+		log.Err(err)
 		return ""
 	}
 	return filepath.Join(home, ".askgpt_history")
@@ -205,7 +205,7 @@ func HistoryLastNRecords(n int) []HistoryRecord {
 	if err != nil {
 		if os.IsNotExist(err) {
 			// Handle file not found error here
-			fmt.Println("History file not found, creating new one.")
+			log.Info().Msg("History file not found, creating new one.")
 			f, err = os.Create(historyPath())
 			if err != nil {
 				panic(err)
@@ -242,7 +242,7 @@ func HistoryLastNRecords(n int) []HistoryRecord {
 		str := records[i][2]
 
 		record := HistoryRecord{TimestampSec: int1, TokenCount: int2, Line: str}
-		fmt.Println(record)
+		log.Info().Msg(fmt.Sprintf("%d,%d,%s", record.TimestampSec, record.TokenCount, record.Line))
 		buffer = append(buffer, record)
 	}
 	return buffer
