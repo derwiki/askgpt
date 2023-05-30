@@ -72,14 +72,19 @@ func LoadConfig() (Config, error) {
 
 	var skipHistory bool
 	var useGpt4 bool
+	var useBard bool
 	flag.BoolVar(&skipHistory, "skip-history", false, "If set, history will not be written to or read from.")
 	flag.BoolVar(&useGpt4, "gpt4", false, "If set, shortcut to LLM_MODELS=gpt-4")
+	flag.BoolVar(&useBard, "bard", false, "If set, shortcut to LLM_MODELS=bard")
 	flag.Parse()
 	log.Info().Msg(fmt.Sprintf("skipHistory: %b", skipHistory))
 	log.Info().Msg(fmt.Sprintf("useGpt4: %b", useGpt4))
+	log.Info().Msg(fmt.Sprintf("useBard: %b", useBard))
 	config.SkipHistory = skipHistory
 	if useGpt4 {
 		config.LLMModels = []string{openai.GPT4}
+	} else if useBard {
+		config.LLMModels = []string{"bard"}
 	}
 
 	return config, nil
