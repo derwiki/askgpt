@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 	"github.com/derwiki/askgpt/clients/google"
-	openai_client "github.com/derwiki/askgpt/clients/openai"
+	openaiclient "github.com/derwiki/askgpt/clients/openai"
 	"github.com/derwiki/askgpt/common"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/sashabaranov/go-openai"
 	"sync"
 )
@@ -38,15 +39,15 @@ func main() {
 	var wg sync.WaitGroup
 
 	var llmFuncMap = map[string]func(string, common.Config, string) (string, error){
-		openai.GPT3Dot5Turbo: openai_client.GetChatCompletions,
-		openai.GPT4:          openai_client.GetChatCompletions,
-		"text-davinci-003":   openai_client.GetTextCompletion,
+		openai.GPT3Dot5Turbo: openaiclient.GetChatCompletions,
+		openai.GPT4:          openaiclient.GetChatCompletions,
+		"text-davinci-003":   openaiclient.GetTextCompletion,
 		"bard":               google.GetBardCompletion,
 	}
 
 	var llmRequests []LLMRequest
 
-	fmt.Println("Loading LLM_MODELS: ", config.LLMModels)
+	log.Info().Msg(fmt.Sprintf("Loading LLM_MODELS: %s", config.LLMModels))
 	for _, model := range config.LLMModels {
 		if fn, ok := llmFuncMap[model]; ok {
 			llmRequests = append(llmRequests, LLMRequest{
@@ -56,7 +57,7 @@ func main() {
 				Fn:     fn,
 			})
 		} else {
-			fmt.Printf("Unknown LLM model: %s\n", model)
+			log.Error().Msg(fmt.Sprintf("Unknown LLM model: %s", model))
 		}
 	}
 
@@ -78,8 +79,10 @@ func main() {
 	}()
 
 	for result := range results {
-		fmt.Println(result.Model)
+		if len(results) > 1 {
+			fmt.Println("----------")
+			fmt.Println(result.Model)
+		}
 		fmt.Println(result.Output)
-		fmt.Println("----------")
 	}
 }
