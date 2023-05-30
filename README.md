@@ -1,6 +1,7 @@
 # askgpt
 
-`askgpt` is a Go application that streams a chat prompt to multiple GPT models and returns their responses to the user. The program reads the prompt from the first command line argument, enclosed in quotes if it has spaces, or from `STDIN`. `PROMPT_PREFIX` can be used to add a prefix to what is being piped in over `STDIN`. `LLM_MODELS` allows the user to specify a subset of all available models to use.
+`askgpt` is a GPT-based chatbot command line tool that sends a prompt to multiple LLMs (e.g. OpenAI's `gpt-4` and Bard's `text-bison-001`) and displays all the responses. Conversational memory allows follow-up questions to previous questions by sending context as part of the prompt.
+
 
 ## Usage
 
