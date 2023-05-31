@@ -12,11 +12,12 @@ Usage: askgpt [OPTIONS] PROMPT
     PROMPT           A string prompt to send to the GPT models.
 
 Environment variables:
-  PROMPT_PREFIX   A prefix to add to the prompt read from STDIN.
-  OPENAI_API_KEY  API key for OpenAI
-  BARDAI_API_KEY  API key for Bard AI
-  LLM_MODELS      Comma-separated list of LLM models
-  MAX_TOKENS      Maximum number of tokens for a prompt
+  PROMPT_PREFIX       A prefix to add to the prompt read from STDIN.
+  OPENAI_API_KEY      API key for OpenAI
+  BARDAI_API_KEY      API key for Bard AI
+  LLM_MODELS          Comma-separated list of LLM models
+  MAX_TOKENS          Maximum number of tokens for a prompt
+  HISTORY_LINE_COUNT  How many lines of history context should be considered to add to the prompt
 
 Examples:
   askgpt "Generate go code to iterate over a list"

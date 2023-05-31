@@ -13,18 +13,25 @@ import (
 )
 
 type Config struct {
-	BardApiKey   string
-	OpenAIApiKey string
-	MaxTokens    int
-	PromptPrefix string
-	LLMModels    []string
-	SkipHistory  bool
+	BardApiKey       string
+	OpenAIApiKey     string
+	MaxTokens        int
+	PromptPrefix     string
+	LLMModels        []string
+	SkipHistory      bool
+	HistoryLineCount int
 }
 
 func LoadConfig() (Config, error) {
 	config := Config{}
 
 	config.PromptPrefix = os.Getenv("PROMPT_PREFIX")
+	num, err := strconv.Atoi(os.Getenv("HISTORY_LINE_COUNT"))
+	if err != nil {
+		config.HistoryLineCount = 10 // default
+	} else {
+		config.HistoryLineCount = num
+	}
 
 	openAiApiKey := os.Getenv("OPENAI_API_KEY")
 	if openAiApiKey == "" {

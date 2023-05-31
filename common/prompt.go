@@ -42,7 +42,7 @@ func GetPrompt(config Config) string {
 	}
 
 	if !config.SkipHistory {
-		lines := HistoryLastNRecords(4)
+		lines := HistoryLastNRecords(config.HistoryLineCount)
 		context := ""
 		runningTokenCount := promptTokenCount
 		for i, record := range lines {
