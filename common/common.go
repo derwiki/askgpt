@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/pkoukk/tiktoken-go"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/sashabaranov/go-openai"
 	"io/ioutil"
@@ -61,7 +62,7 @@ func LoadConfig() (Config, error) {
 
 	maxTokensStr := os.Getenv("MAX_TOKENS")
 	if maxTokensStr == "" {
-		config.MaxTokens = 100
+		config.MaxTokens = 200
 	} else {
 		maxTokens, err := strconv.Atoi(maxTokensStr)
 		if err != nil {
@@ -73,18 +74,25 @@ func LoadConfig() (Config, error) {
 	var skipHistory bool
 	var useGpt4 bool
 	var useBard bool
+	var useInfo bool
 	flag.BoolVar(&skipHistory, "skip-history", false, "If set, history will not be written to or read from.")
 	flag.BoolVar(&useGpt4, "gpt4", false, "If set, shortcut to LLM_MODELS=gpt-4")
 	flag.BoolVar(&useBard, "bard", false, "If set, shortcut to LLM_MODELS=bard")
+	flag.BoolVar(&useInfo, "info", false, "If set, show info and above logs")
 	flag.Parse()
 	log.Info().Msg(fmt.Sprintf("skipHistory: %b", skipHistory))
 	log.Info().Msg(fmt.Sprintf("useGpt4: %b", useGpt4))
 	log.Info().Msg(fmt.Sprintf("useBard: %b", useBard))
+	log.Info().Msg(fmt.Sprintf("useInfo: %b", useInfo))
 	config.SkipHistory = skipHistory
 	if useGpt4 {
 		config.LLMModels = []string{openai.GPT4}
 	} else if useBard {
 		config.LLMModels = []string{"bard"}
+	}
+
+	if useInfo {
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 
 	return config, nil
@@ -162,7 +170,7 @@ func GetPrompt(config Config) string {
 		context := ""
 		runningTokenCount := prompTokenCount
 		for i, record := range lines {
-			log.Info().Msg(fmt.Sprintf("i: %d, record: %s", i, record.Line))
+			log.Debug().Msg(fmt.Sprintf("i: %d, record: %s", i, record.Line))
 
 			if record.TokenCount+runningTokenCount >= PromptModelMax {
 				// nothing
@@ -181,7 +189,7 @@ func GetPrompt(config Config) string {
 	} else {
 		log.Info().Msg("SkipHistory set, not building history context")
 	}
-	log.Info().Msg("prompt: " + prompt)
+	log.Debug().Msg("prompt: " + prompt)
 	return prompt
 }
 
@@ -279,7 +287,7 @@ func HistoryLastNRecords(n int) []HistoryRecord {
 		str := records[i][2]
 
 		record := HistoryRecord{TimestampSec: int1, TokenCount: int2, Line: str}
-		log.Info().Msg(fmt.Sprintf("%d,%d,%s", record.TimestampSec, record.TokenCount, record.Line))
+		log.Info().Msg(fmt.Sprintf("%d,%d,len(%s)", record.TimestampSec, record.TokenCount, len(record.Line)))
 		buffer = append(buffer, record)
 	}
 	return buffer

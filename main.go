@@ -70,7 +70,7 @@ func main() {
 			defer wg.Done()
 			output, err := j.Fn(j.Prompt, j.Config, j.Model)
 			results <- LLMResponse{Output: output, Err: err, Model: j.Model}
-			err = common.WriteHistory(config, fmt.Sprintf("A: %s", output))
+			err = common.WriteHistory(config, fmt.Sprintf("A(%s): %s", j.Model, output))
 		}(llmRequest)
 	}
 
@@ -80,10 +80,6 @@ func main() {
 	}()
 
 	for result := range results {
-		if len(results) > 1 {
-			fmt.Println("----------")
-			fmt.Println(result.Model)
-		}
-		fmt.Println(result.Output)
+		fmt.Println(fmt.Sprintf("# %s:\n%s", result.Model, result.Output))
 	}
 }

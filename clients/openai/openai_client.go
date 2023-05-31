@@ -90,6 +90,7 @@ func GetChatCompletions(content string, config common.Config, model string) (str
 					Content: config.PromptPrefix + content,
 				},
 			},
+			MaxTokens: config.MaxTokens,
 		},
 	)
 
