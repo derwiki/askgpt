@@ -8,9 +8,13 @@ GOOS=windows GOARCH=amd64 go build -o release/askgpt main.go
 echo "Building for Linux (64-bit)"
 GOOS=linux GOARCH=amd64 go build -o release/askgpt-linux main.go
 
-# Build for macOS (64-bit)
+# Build for macOS (64-bit arm)
 echo "Building for macOS (64-bit)"
-GOOS=darwin GOARCH=amd64 go build -o release/askgpt-macos main.go
+GOOS=darwin GOARCH=arm64 go build -o release/askgpt-macos-apple main.go
+
+# Build for macOS (64-bit intel)
+echo "Building for macOS (64-bit)"
+GOOS=darwin GOARCH=amd64 go build -o release/askgpt-macos-intel main.go
 
 # Build for FreeBSD (64-bit)
 echo "Building for FreeBSD (64-bit)"
