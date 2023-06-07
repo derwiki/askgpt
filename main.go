@@ -51,15 +51,26 @@ func main() {
 	log.Info().Msg(fmt.Sprintf("Loading LLM_MODELS: %s", config.LLMModels))
 	for _, model := range config.LLMModels {
 		if fn, ok := llmFuncMap[model]; ok {
-			llmRequests = append(llmRequests, LLMRequest{
-				Prompt: prompt,
-				Config: config,
-				Model:  model,
-				Fn:     fn,
-			})
+			// filter out models we don't have an API key for
+			if model == "bard" && len(config.BardApiKey) == 0 {
+				log.Info().Msg("excluding bard, missing api key")
+			} else if model != "bard" && len(config.OpenAIApiKey) == 0 {
+				log.Info().Msg(fmt.Sprintf("excluding %s, missing api key", model))
+			} else {
+				llmRequests = append(llmRequests, LLMRequest{
+					Prompt: prompt,
+					Config: config,
+					Model:  model,
+					Fn:     fn,
+				})
+			}
 		} else {
 			log.Error().Msg(fmt.Sprintf("Unknown LLM model: %s", model))
 		}
+	}
+
+	if len(llmRequests) == 0 {
+		log.Error().Msg(fmt.Sprintf("No LLMModels selected that have an API key set: %s", config.LLMModels))
 	}
 
 	results := make(chan LLMResponse, len(llmRequests))
