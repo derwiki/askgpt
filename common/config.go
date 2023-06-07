@@ -6,7 +6,6 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/sashabaranov/go-openai"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -33,25 +32,8 @@ func LoadConfig() (Config, error) {
 		config.HistoryLineCount = num
 	}
 
-	openAiApiKey := os.Getenv("OPENAI_API_KEY")
-	if openAiApiKey == "" {
-		apiKeyBytes, err := ioutil.ReadFile("./.openai_key")
-		if err != nil {
-			return config, err
-		}
-		openAiApiKey = strings.TrimSpace(string(apiKeyBytes))
-	}
-	config.OpenAIApiKey = openAiApiKey
-
-	bardAiApiKey := os.Getenv("BARDAI_API_KEY")
-	if bardAiApiKey == "" {
-		apiKeyBytes, err := ioutil.ReadFile("./.bardai_key")
-		if err != nil {
-			return config, err
-		}
-		bardAiApiKey = strings.TrimSpace(string(apiKeyBytes))
-	}
-	config.BardApiKey = bardAiApiKey
+	config.OpenAIApiKey = os.Getenv("OPENAI_API_KEY")
+	config.BardApiKey = os.Getenv("BARDAI_API_KEY")
 
 	// read LLM models as an array
 	models := strings.Split(os.Getenv("LLM_MODELS"), ",")
