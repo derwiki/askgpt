@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/sashabaranov/go-openai"
+	"os"
 	"sync"
 )
 
@@ -91,6 +92,11 @@ func main() {
 	}()
 
 	for result := range results {
-		fmt.Println(fmt.Sprintf("# %s:\n%s", result.Model, result.Output))
+		if result.Err == nil {
+			fmt.Println(fmt.Sprintf("\nA(%s): %s", result.Model, result.Output))
+		} else {
+			fmt.Println(fmt.Sprintf("\nA(%s): Error: %s", result.Model, result.Err))
+		}
+		os.Stdout.Sync()
 	}
 }
