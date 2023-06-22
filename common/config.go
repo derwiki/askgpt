@@ -64,7 +64,7 @@ func LoadConfig() (Config, error) {
 	if models[0] != "" {
 		config.LLMModels = models
 	} else {
-		config.LLMModels = []string{openai.GPT3Dot5Turbo, openai.GPT4, "text-davinci-003", "bard"}
+		config.LLMModels = []string{openai.GPT3Dot5Turbo, openai.GPT40613, "text-davinci-003", "bard"}
 	}
 
 	maxTokensStr := os.Getenv("MAX_TOKENS")
@@ -81,7 +81,7 @@ func LoadConfig() (Config, error) {
 
 	config.SkipHistory = skipHistory
 	if useGpt4 {
-		config.LLMModels = []string{openai.GPT4}
+		config.LLMModels = []string{openai.GPT40613}
 	} else if useBard {
 		config.LLMModels = []string{"bard"}
 	}
