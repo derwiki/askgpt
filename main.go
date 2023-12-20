@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"sync"
+
 	"github.com/derwiki/askgpt/clients/google"
 	openaiclient "github.com/derwiki/askgpt/clients/openai"
 	"github.com/derwiki/askgpt/common"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/sashabaranov/go-openai"
-	"os"
-	"sync"
 )
 
 // LLMRequest Define a struct to hold parameters for function
@@ -41,10 +42,11 @@ func main() {
 	var wg sync.WaitGroup
 
 	var llmFuncMap = map[string]func(string, common.Config, string) (string, error){
-		openai.GPT3Dot5Turbo: openaiclient.GetChatCompletions,
-		openai.GPT4:          openaiclient.GetChatCompletions,
-		"text-davinci-003":   openaiclient.GetTextCompletion,
-		"bard":               google.GetBardCompletion,
+		openai.GPT3Dot5Turbo:    openaiclient.GetChatCompletions,
+		openai.GPT4:             openaiclient.GetChatCompletions,
+		openai.GPT4TurboPreview: openaiclient.GetChatCompletions,
+		"text-davinci-003":      openaiclient.GetTextCompletion,
+		"bard":                  google.GetBardCompletion,
 	}
 
 	var llmRequests []LLMRequest

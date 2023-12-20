@@ -3,12 +3,13 @@ package common
 import (
 	"flag"
 	"fmt"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-	"github.com/sashabaranov/go-openai"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+	"github.com/sashabaranov/go-openai"
 )
 
 type Config struct {
@@ -29,7 +30,7 @@ func LoadConfig() (Config, error) {
 	var useBard bool
 	flag.BoolVar(&useInfo, "info", false, "If set, show info and above logs")
 	flag.BoolVar(&skipHistory, "skip-history", false, "If set, history will not be written to or read from.")
-	flag.BoolVar(&useGpt4, "gpt4", false, "If set, shortcut to LLM_MODELS=gpt-4")
+	flag.BoolVar(&useGpt4, "gpt4", false, "If set, shortcut to LLM_MODELS=gpt-4-1106-preview")
 	flag.BoolVar(&useBard, "bard", false, "If set, shortcut to LLM_MODELS=bard")
 	flag.Parse()
 	log.Info().Msg(fmt.Sprintf("config useInfo: %b", useInfo))
@@ -64,7 +65,7 @@ func LoadConfig() (Config, error) {
 	if models[0] != "" {
 		config.LLMModels = models
 	} else {
-		config.LLMModels = []string{openai.GPT3Dot5Turbo, openai.GPT40613, "text-davinci-003", "bard"}
+		config.LLMModels = []string{openai.GPT4TurboPreview, "bard"}
 	}
 
 	maxTokensStr := os.Getenv("MAX_TOKENS")
@@ -81,7 +82,7 @@ func LoadConfig() (Config, error) {
 
 	config.SkipHistory = skipHistory
 	if useGpt4 {
-		config.LLMModels = []string{openai.GPT40613}
+		config.LLMModels = []string{openai.GPT4TurboPreview}
 	} else if useBard {
 		config.LLMModels = []string{"bard"}
 	}

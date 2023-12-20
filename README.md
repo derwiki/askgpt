@@ -58,6 +58,7 @@ sessions that feels like a conversational chat.
 
 - `openai.GPT3Dot5Turbo`
 - `openai.GPT4`
+- `openai.GPT4TurboPreview`
 - `text-davinci-003`
 
 It also supports the `bard` model from Google.
