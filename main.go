@@ -5,6 +5,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/derwiki/askgpt/clients/anthropic"
 	"github.com/derwiki/askgpt/clients/google"
 	openaiclient "github.com/derwiki/askgpt/clients/openai"
 	"github.com/derwiki/askgpt/common"
@@ -47,6 +48,7 @@ func main() {
 		openai.GPT4TurboPreview: openaiclient.GetChatCompletions,
 		"text-davinci-003":      openaiclient.GetTextCompletion,
 		"bard":                  google.GetBardCompletion,
+		"claude-2.1":            anthropic.GetChatCompletions,
 	}
 
 	var llmRequests []LLMRequest
@@ -60,12 +62,14 @@ func main() {
 			} else if model != "bard" && len(config.OpenAIApiKey) == 0 {
 				log.Info().Msg(fmt.Sprintf("excluding %s, missing api key", model))
 			} else {
-				llmRequests = append(llmRequests, LLMRequest{
+				llmRequest := LLMRequest{
 					Prompt: prompt,
 					Config: config,
 					Model:  model,
 					Fn:     fn,
-				})
+				}
+				log.Info().Msg(fmt.Sprintf("Loaded model: %s", llmRequest.Model))
+				llmRequests = append(llmRequests, llmRequest)
 			}
 		} else {
 			log.Error().Msg(fmt.Sprintf("Unknown LLM model: %s", model))

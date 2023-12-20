@@ -15,6 +15,7 @@ import (
 type Config struct {
 	BardApiKey       string
 	OpenAIApiKey     string
+	AnthropicApiKey  string
 	MaxTokens        int
 	PromptPrefix     string
 	LLMModels        []string
@@ -58,6 +59,8 @@ func LoadConfig() (Config, error) {
 	log.Info().Msg(fmt.Sprintf("config.OpenAIApiKey length: %s", len(config.OpenAIApiKey)))
 	config.BardApiKey = os.Getenv("BARDAI_API_KEY")
 	log.Info().Msg(fmt.Sprintf("config.BardApiKey length: %s", len(config.BardApiKey)))
+	config.AnthropicApiKey = os.Getenv("ANTHROPIC_API_KEY")
+	log.Info().Msg(fmt.Sprintf("config.AnthropicApiKey length: %s", len(config.BardApiKey)))
 
 	// read LLM models as an array
 	log.Info().Msg(fmt.Sprintf("config LLM_MODELS: %s", os.Getenv("LLM_MODELS")))
@@ -65,7 +68,7 @@ func LoadConfig() (Config, error) {
 	if models[0] != "" {
 		config.LLMModels = models
 	} else {
-		config.LLMModels = []string{openai.GPT4TurboPreview, "bard"}
+		config.LLMModels = []string{openai.GPT4TurboPreview, "bard", "claude-2.1"}
 	}
 
 	maxTokensStr := os.Getenv("MAX_TOKENS")
