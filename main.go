@@ -96,12 +96,12 @@ func main() {
 
 	for _, llmRequest := range llmRequests {
 		wg.Add(1)
-		go func(j LLMRequest) {
+		go func(j *LLMRequest) {
 			defer wg.Done()
 			output, err := j.Fn(j.Prompt, j.Config, j.Model)
 			results <- LLMResponse{Output: output, Err: err, Model: j.Model}
 			err = common.WriteHistory(config, fmt.Sprintf("A(%s): %s", j.Model, output))
-		}(llmRequest)
+		}(&llmRequest)
 	}
 
 	go func() {
