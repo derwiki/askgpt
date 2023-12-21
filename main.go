@@ -42,20 +42,32 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	var llmFuncMap = map[string]func(string, common.Config, string) (string, error){
-		openai.GPT3Dot5Turbo:    openaiclient.GetChatCompletions,
-		openai.GPT4:             openaiclient.GetChatCompletions,
-		openai.GPT4TurboPreview: openaiclient.GetChatCompletions,
-		"text-davinci-003":      openaiclient.GetTextCompletion,
-		"bard":                  google.GetBardCompletion,
-		"claude-2.1":            anthropic.GetChatCompletions,
-	}
+	var llmFuncMap sync.Map
+
+	llmFuncMap.Store(
+		openai.GPT3Dot5Turbo, openaiclient.GetChatCompletions)
+	llmFuncMap.Store(
+		openai.GPT4, openaiclient.GetChatCompletions)
+	llmFuncMap.Store(
+		openai.GPT4TurboPreview, openaiclient.GetChatCompletions)
+	llmFuncMap.Store(
+		"text-davinci-003", openaiclient.GetTextCompletion)
+	llmFuncMap.Store(
+		"bard", google.GetBardCompletion)
+	llmFuncMap.Store(
+		"claude-2.1", anthropic.GetChatCompletions)
 
 	var llmRequests []LLMRequest
 
 	log.Info().Msg(fmt.Sprintf("Loading LLM_MODELS: %s", config.LLMModels))
 	for _, model := range config.LLMModels {
-		if fn, ok := llmFuncMap[model]; ok {
+		fn, ok := llmFuncMap.Load(model)
+		if ok {
+			fnTyped, ok := fn.(func(string, common.Config, string) (string, error))
+			if !ok {
+				log.Error().Msg(fmt.Sprintf("Stored function not of expected type: %T", fn))
+				continue
+			}
 			// filter out models we don't have an API key for
 			if model == "bard" && len(config.BardApiKey) == 0 {
 				log.Info().Msg("excluding bard, missing api key")
@@ -66,7 +78,7 @@ func main() {
 					Prompt: prompt,
 					Config: config,
 					Model:  model,
-					Fn:     fn,
+					Fn:     fnTyped,
 				}
 				log.Info().Msg(fmt.Sprintf("Loaded model: %s", llmRequest.Model))
 				llmRequests = append(llmRequests, llmRequest)
