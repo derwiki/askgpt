@@ -92,7 +92,7 @@ func main() {
 		log.Error().Msg(fmt.Sprintf("No LLMModels selected that have an API key set: %s", config.LLMModels))
 	}
 
-	results := make(chan LLMResponse, len(llmRequests))
+	results := make(chan LLMResponse, len(llmRequests)*2)
 
 	for _, llmRequest := range llmRequests {
 		wg.Add(1)
