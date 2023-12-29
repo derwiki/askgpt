@@ -39,6 +39,7 @@ func main() {
 	}
 
 	prompt := common.GetPrompt(config)
+	fmt.Println(fmt.Sprintf("\nQ: %s", prompt))
 
 	var wg sync.WaitGroup
 
