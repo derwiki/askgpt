@@ -23,7 +23,7 @@ type Config struct {
 	HistoryLineCount int
 }
 
-const defaultLLMModels = []string{openai.GPT4TurboPreview, "bard", "claude-2.1"}
+var defaultLLMModels = []string{openai.GPT4TurboPreview, "bard", "claude-2.1"}
 
 func LoadConfig() (Config, error) {
 	// parse info first so other info logs in this file are outputted
