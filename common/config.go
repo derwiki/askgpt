@@ -59,11 +59,11 @@ func LoadConfig() (Config, error) {
 	}
 
 	config.OpenAIApiKey = os.Getenv("OPENAI_API_KEY")
-	log.Info().Msg(fmt.Sprintf("config.OpenAIApiKey length: %s", len(config.OpenAIApiKey)))
+	log.Info().Msg(fmt.Sprintf("config.OpenAIApiKey length: %d", len(config.OpenAIApiKey)))
 	config.BardApiKey = os.Getenv("BARDAI_API_KEY")
-	log.Info().Msg(fmt.Sprintf("config.BardApiKey length: %s", len(config.BardApiKey)))
+	log.Info().Msg(fmt.Sprintf("config.BardApiKey length: %d", len(config.BardApiKey)))
 	config.AnthropicApiKey = os.Getenv("ANTHROPIC_API_KEY")
-	log.Info().Msg(fmt.Sprintf("config.AnthropicApiKey length: %s", len(config.BardApiKey)))
+	log.Info().Msg(fmt.Sprintf("config.AnthropicApiKey length: %d", len(config.BardApiKey)))
 
 	// read LLM models as an array
 	log.Info().Msg(fmt.Sprintf("config LLM_MODELS: %s", os.Getenv("LLM_MODELS")))
