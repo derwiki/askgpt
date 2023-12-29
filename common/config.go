@@ -96,4 +96,5 @@ func LoadConfig() (Config, error) {
 	} else if useClaude {
 		config.LLMModels = []string{"claude-2.1"}
 	}
-	return config
+	return config, nil
+}
