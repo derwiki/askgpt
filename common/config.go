@@ -2,7 +2,6 @@ package common
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -38,21 +37,22 @@ func LoadConfig() (Config, error) {
 	flag.BoolVar(&useBard, "bard", false, "If set, shortcut to LLM_MODELS=bard")
 	flag.BoolVar(&useClaude, "claude", false, "If set, shortcut to LLM_MODELS=claude-2.1")
 	flag.Parse()
-	log.Info().Msg(fmt.Sprintf("config useInfo: %b", useInfo))
-	log.Info().Msg(fmt.Sprintf("config skipHistory: %b", skipHistory))
-	log.Info().Msg(fmt.Sprintf("config useGpt4: %b", useGpt4))
-	log.Info().Msg(fmt.Sprintf("config useBard: %b", useBard))
-	log.Info().Msg(fmt.Sprintf("config useClaude: %b", useClaude))
+	log.Info().
+		Bool("useInfo", useInfo).
+		Bool("skipHistory", skipHistory).
+		Bool("useGpt4", useGpt4).
+		Bool("useBard", useBard).
+		Bool("useClaude", useClaude)
 
 	if useInfo {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 
-	log.Info().Msg(fmt.Sprintf("config LoadConfig() enter"))
+	log.Info().Msg("config LoadConfig() enter")
 	config := Config{}
 
 	config.PromptPrefix = os.Getenv("PROMPT_PREFIX")
-	log.Info().Msg(fmt.Sprintf("config.PromptPrefix: %s", config.PromptPrefix))
+	log.Info().Str("PromptPrefix", config.PromptPrefix)
 	num, err := strconv.Atoi(os.Getenv("HISTORY_LINE_COUNT"))
 	if err != nil {
 		config.HistoryLineCount = 10 // default
@@ -61,14 +61,14 @@ func LoadConfig() (Config, error) {
 	}
 
 	config.OpenAIApiKey = os.Getenv("OPENAI_API_KEY")
-	log.Info().Msg(fmt.Sprintf("config.OpenAIApiKey length: %d", len(config.OpenAIApiKey)))
+	log.Info().Int("config.OpenAIApiKey length", len(config.OpenAIApiKey))
 	config.BardApiKey = os.Getenv("BARDAI_API_KEY")
-	log.Info().Msg(fmt.Sprintf("config.BardApiKey length: %d", len(config.BardApiKey)))
+	log.Info().Int("config.BardApiKey length", len(config.BardApiKey))
 	config.AnthropicApiKey = os.Getenv("ANTHROPIC_API_KEY")
-	log.Info().Msg(fmt.Sprintf("config.AnthropicApiKey length: %d", len(config.BardApiKey)))
+	log.Info().Int("config.AnthropicApiKey length", len(config.BardApiKey))
 
 	// read LLM models as an array
-	log.Info().Msg(fmt.Sprintf("config LLM_MODELS: %s", os.Getenv("LLM_MODELS")))
+	log.Info().Str("config LLM_MODELS", os.Getenv("LLM_MODELS"))
 	models := strings.Split(os.Getenv("LLM_MODELS"), ",")
 	if models[0] != "" {
 		config.LLMModels = models
@@ -77,7 +77,7 @@ func LoadConfig() (Config, error) {
 	}
 
 	maxTokensStr := os.Getenv("MAX_TOKENS")
-	log.Info().Msg(fmt.Sprintf("config maxTokenStr: %s", maxTokensStr))
+	log.Info().Str("config maxTokenStr", maxTokensStr)
 	if maxTokensStr == "" {
 		config.MaxTokens = 200
 	} else {
