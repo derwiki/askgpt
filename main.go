@@ -53,8 +53,6 @@ func main() {
 	llmFuncMap.Store(
 		openai.GPT4TurboPreview, openaiclient.GetChatCompletions)
 	llmFuncMap.Store(
-		"text-davinci-003", openaiclient.GetTextCompletion)
-	llmFuncMap.Store(
 		"bard", google.GetBardCompletion)
 	llmFuncMap.Store(
 		"claude-2.1", anthropic.GetChatCompletions)

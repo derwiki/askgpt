@@ -1,23 +1,13 @@
 package openai
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
-	"log"
-	"net/http"
-	"strings"
 
 	"github.com/derwiki/askgpt/common"
+	"github.com/rs/zerolog/log"
 	"github.com/sashabaranov/go-openai"
 )
 
-const apiBaseURL = "https://api.openai.com/v1/completions"
-
-type TextCompletionResponse struct {
-	Choices []ChatGPTCompletionsResponseChoice `json:"choices"`
-}
 type ChatGPTCompletionsResponseChoice struct {
 	FinishReason string `json:"finish_reason"`
 	Index        int    `json:"index"`
@@ -30,53 +20,9 @@ type ChatGPTCompletionsRequest struct {
 	MaxTokens int    `json:"max_tokens"`
 }
 
-func GetTextCompletion(prompt string, config common.Config, model string) (string, error) {
-	if model == "" {
-		model = "text-davinci-003"
-	}
-	textCompletionRequest := ChatGPTCompletionsRequest{
-		Model:     model,
-		Prompt:    config.PromptPrefix + prompt,
-		MaxTokens: config.MaxTokens,
-	}
-	requestBodyBytes, err := json.Marshal(textCompletionRequest)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	client := &http.Client{}
-
-	request, err := http.NewRequest("POST", apiBaseURL, bytes.NewBuffer(requestBodyBytes))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", config.OpenAIApiKey))
-	request.Header.Set("Content-Type", "application/json")
-
-	response, err := client.Do(request)
-	if err != nil {
-		log.Fatal(err)
-	}
-	// close the response body at the end of the function
-	defer response.Body.Close()
-
-	var responseBody TextCompletionResponse
-	err = json.NewDecoder(response.Body).Decode(&responseBody)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if len(responseBody.Choices) == 0 {
-		log.Fatal("No choices found in the response body.")
-	}
-
-	return strings.TrimSpace(responseBody.Choices[0].Text), nil
-}
-
 func GetChatCompletions(content string, config common.Config, model string) (string, error) {
 	if model == "" {
-		model = openai.GPT3Dot5Turbo
+		model = openai.GPT4TurboPreview
 	}
 	// TODO(derwiki) assert model exists in openai package
 	client := openai.NewClient(config.OpenAIApiKey)
@@ -95,7 +41,7 @@ func GetChatCompletions(content string, config common.Config, model string) (str
 	)
 
 	if err != nil {
-		fmt.Printf("ChatCompletion error: %v\n", err)
+		log.Error().Str("ChatCompletion error", err.Error())
 		return "", err
 	}
 
