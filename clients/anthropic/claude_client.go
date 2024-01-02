@@ -39,14 +39,14 @@ func GetChatCompletions(prompt string, config common.Config, model string) (stri
 
 	requestBytes, err := json.Marshal(requestData)
 	if err != nil {
-		log.Error().Msg(fmt.Sprintf("error marshaling request data: %v", err))
+		log.Error().Str("error marshaling request data", err.Error()).Msg("error marshaling request data")
 		return "", fmt.Errorf("error marshaling request data: %v", err)
 	}
 
 	BaseURL := "https://api.anthropic.com/v1/complete"
 	req, err := http.NewRequest("POST", BaseURL, bytes.NewBuffer(requestBytes))
 	if err != nil {
-		log.Error().Msg(fmt.Sprintf("error creating request: %v", err))
+		log.Error().Str("error creating request", err.Error()).Msg("error creating request")
 		return "", fmt.Errorf("error creating request: %v", err)
 	}
 
@@ -56,14 +56,14 @@ func GetChatCompletions(prompt string, config common.Config, model string) (stri
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Error().Msg(fmt.Sprintf("error sending request: %v", err))
+		log.Error().Str("error sending request", err.Error()).Msg("error sending request")
 		return "", fmt.Errorf("error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Error().Msg(fmt.Sprintf("error reading response body: %v", err))
+		log.Error().Str("error reading response body", err.Error()).Msg("error reading response body")
 		return "", fmt.Errorf("error reading response body: %v", err)
 	}
 
@@ -75,7 +75,7 @@ func GetChatCompletions(prompt string, config common.Config, model string) (stri
 
 	var completionResp CompletionResponse
 	if err := json.Unmarshal(body, &completionResp); err != nil {
-		log.Error().Msg(fmt.Sprintf("error unmarshaling response: %v", err))
+		log.Error().Str("error unmarshaling response", err.Error()).Msg("error unmarshaling response")
 		return "", fmt.Errorf("error unmarshaling response: %v", err)
 	}
 
