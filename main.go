@@ -39,8 +39,13 @@ func main() {
 		common.UsageAndQuit()
 	}
 
-	prompt := common.GetPrompt(config)
-	fmt.Printf("\nQ: %s\n", prompt)
+	if config.UseInfo {
+		log.Info().Msg("in main(), setting global log level to InfoLevel")
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	}
+
+	origPrompt, fullPrompt := common.GetPrompt(config)
+	fmt.Printf("Q: %s\n", origPrompt)
 
 	var wg sync.WaitGroup
 
@@ -77,7 +82,7 @@ func main() {
 				log.Info().Str("excluding model, missing api key", model)
 			} else {
 				llmRequest := LLMRequest{
-					Prompt: prompt,
+					Prompt: fullPrompt,
 					Config: config,
 					Model:  model,
 					Fn:     fnTyped,
@@ -113,9 +118,9 @@ func main() {
 
 	for result := range results {
 		if result.Err == nil {
-			fmt.Printf("\nA(%s): %s\n", result.Model, result.Output)
+			fmt.Printf("A(%s): %s\n", result.Model, result.Output)
 		} else {
-			fmt.Printf("\nA(%s): Error: %s\n", result.Model, result.Err)
+			fmt.Printf("A(%s): Error: %s\n", result.Model, result.Err)
 		}
 		os.Stdout.Sync()
 	}
