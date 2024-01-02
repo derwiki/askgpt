@@ -101,12 +101,21 @@ func main() {
 
 	results := make(chan LLMResponse, len(llmRequests)*2)
 
+	type ModelDuration struct {
+		Model    string
+		Duration time.Duration
+	}
+	durations := make(chan ModelDuration, len(llmRequests))
+
 	for _, llmRequest := range llmRequests {
 		wg.Add(1)
 		go func(j LLMRequest) {
 			defer wg.Done()
 			log.Info().Str("model", j.Model).Msg("Calling j.Fn")
+			startTime := time.Now()
 			output, err := j.Fn(j.Prompt, j.Config, j.Model)
+			duration := time.Since(startTime)
+			durations <- ModelDuration{Model: j.Model, Duration: duration}
 			results <- LLMResponse{Output: output, Err: err, Model: j.Model}
 			err = common.WriteHistory(config, fmt.Sprintf("A(%s): %s", j.Model, output))
 		}(llmRequest)
@@ -114,12 +123,19 @@ func main() {
 
 	go func() {
 		wg.Wait()
+		close(durations)
 		close(results)
 	}()
 
+	modelDurations := make(map[string]time.Duration)
+	for d := range durations {
+		modelDurations[d.Model] = d.Duration
+	}
+
 	for result := range results {
 		if result.Err == nil {
-			fmt.Printf("A(%s): %s\n", result.Model, result.Output)
+			duration := modelDurations[result.Model]
+			fmt.Printf("A(%s/%s): %s\n", result.Model, duration, result.Output)
 		} else {
 			fmt.Printf("A(%s): Error: %s\n", result.Model, result.Err)
 		}
