@@ -28,7 +28,11 @@ A(bard): The Super Bowl in 2009 (Super Bowl XLIII) was won by the Pittsburgh Ste
 ```
 Usage: askgpt [OPTIONS] PROMPT
     OPTIONS:
-        --skip-history  Skip reading and writing to the history.
+        --info          Show info and above logs.
+        --skip-history  Skip writing to the history.
+        --gpt4          Use GPT-4 model.
+        --bard          Use Bard model.
+        --claude        Use Claude model.
         --gpt4          Shortcut to set LLM_MODELS=gpt-4
         --bard          Shortcut to set LLM_MODELS=bard
         --info          Set log verbosity to info level
@@ -37,6 +41,7 @@ Usage: askgpt [OPTIONS] PROMPT
 Environment variables:
   PROMPT_PREFIX       A prefix to add to the prompt read from STDIN.
   OPENAI_API_KEY      API key for OpenAI
+  ANTHROPIC_API_KEY   API key for Anthropic
   BARDAI_API_KEY      API key for Bard AI
   LLM_MODELS          Comma-separated list of LLM models
   MAX_TOKENS          Maximum number of tokens for a prompt
@@ -46,7 +51,10 @@ Examples:
   askgpt "Generate go code to iterate over a list"
   askgpt "Refactor that generated code to be in a function named Scan()"
   cat main.go | PROMPT_PREFIX="Generate a code review: " askgpt
-  askgpt --skip-history --gpt4 --info "Generate go code to iterate over a list"
+  askgpt --skip-history "Generate go code to iterate over a list"
+  askgpt --gpt4 "What is the meaning of life?"
+  askgpt --bard "Tell me a story about a robot."
+  askgpt --claude "Explain quantum computing in simple terms."
 ```
 
 The program uses a history to provide prior question context to the current prompt, enabling a short-term memory across
