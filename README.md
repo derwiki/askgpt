@@ -5,26 +5,19 @@ Bard's `text-bison-001`) and displays all the responses. Conversational memory a
 questions by sending context as part of the prompt.
 
 ## Example session
-This demonstrates the ability to ask follow-up questions and query multiple LLMs simultaneously.
-```
+This demonstrates the ability to ask follow-up questions using session history:
+```bash
 $ askgpt --gpt4 "who won the superbowl in 2006?"
-A(gpt-4):The Super Bowl in 2006 (Super Bowl XL) was won by the Pittsburgh Steelers.
+Q: who won the superbowl in 2006?
+A(gpt-4-1106-preview): The Pittsburgh Steelers won Super Bowl XL in 2006. They defeated the Seattle Seahawks with a score of 21-10. The game took place on February 5, 2006, at Ford Field in Detroit, Michigan. It was the Steelers' fifth Super Bowl victory, and wide receiver Hines Ward was named the Super Bowl MVP.
 
-# you can ask follow up questions that recall earlier parts of the conversation
-$ askgpt --gpt4 "and in 2008?"                  
-A(gpt-4): The Super Bowl in 2008 (Super Bowl XLII) was won by the New York Giants.
-
-# and retain that conversation across different models
-$ askgpt "and in 2009?" 
-A(text-davinci-003): The Super Bowl in 2009 (Super Bowl XLIII) was won by the Pittsburgh Steelers.
-A(gpt-4): The Super Bowl in 2009 (Super Bowl XLIII) was won by the Pittsburgh Steelers.
-A(gpt-3.5-turbo): The Super Bowl in 2009 (Super Bowl XLIII) was won by the Pittsburgh Steelers.
-A(bard): The Super Bowl in 2009 (Super Bowl XLIII) was won by the Pittsburgh Steelers.
+$ askgpt --gpt4 "and in 2008?"
+Q: and in 2008?
+A(gpt-4-1106-preview): In 2008, the New York Giants won Super Bowl XLII. They defeated the New England Patriots with a score of 17-14. The game took place on February 3, 2008, at the University of Phoenix Stadium in Glendale, Arizona. It was notably the game where the Patriots' attempt at a perfect season was ended, and Giants' wide receiver David Tyree made the famous "Helmet Catch" during the Giants' game-winning drive. The MVP of the game was Giants' quarterback Eli Manning.
 ```
 
 
 ## Usage
-
 ```
 Usage: askgpt [OPTIONS] PROMPT
     OPTIONS:
@@ -62,14 +55,14 @@ sessions that feels like a conversational chat.
 
 ## Available Models
 
-`askgpt` supports the following OpenAI GPT models:
+`askgpt` supports the following LLM models:
 
 - `openai.GPT3Dot5Turbo`
 - `openai.GPT4`
 - `openai.GPT4TurboPreview`
-- `text-davinci-003`
+- `google.bard`
+- `anthropic.claude21`
 
-It also supports the `bard` model from Google.
 
 ## Output
 
