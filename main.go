@@ -79,7 +79,7 @@ func main() {
 			} else if model == "claude" && len(config.AnthropicApiKey) == 0 {
 				log.Info().Msg("excluding claude, missing api key")
 			} else if model != "bard" && len(config.OpenAIApiKey) == 0 {
-				log.Info().Str("excluding model, missing api key", model)
+				log.Info().Str("excluding model, missing api key", model).Msg("")
 			} else {
 				llmRequest := LLMRequest{
 					Prompt: fullPrompt,
@@ -87,7 +87,7 @@ func main() {
 					Model:  model,
 					Fn:     fnTyped,
 				}
-				log.Info().Str("Loaded model", llmRequest.Model)
+				log.Info().Str("Loaded model", llmRequest.Model).Msg("")
 				llmRequests = append(llmRequests, llmRequest)
 			}
 		} else {
