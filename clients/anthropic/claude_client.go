@@ -12,6 +12,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// https://docs.anthropic.com/claude/reference/complete_post
+
 type CompletionRequest struct {
 	Model             string `json:"model"`
 	MaxTokensToSample int    `json:"max_tokens_to_sample"`
