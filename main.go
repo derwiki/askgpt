@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"sync"
 
 	"github.com/derwiki/askgpt/clients/anthropic"
@@ -34,12 +35,12 @@ func main() {
 
 	config, err := common.LoadConfig()
 	if err != nil {
-		fmt.Println("error: Fatal occurred in loadConfig")
+		log.Error().Msg("Fatal occurred in loadConfig")
 		common.UsageAndQuit()
 	}
 
 	prompt := common.GetPrompt(config)
-	fmt.Println(fmt.Sprintf("\nQ: %s", prompt))
+	fmt.Printf("\nQ: %s\n", prompt)
 
 	var wg sync.WaitGroup
 
@@ -60,20 +61,22 @@ func main() {
 
 	var llmRequests []LLMRequest
 
-	log.Info().Msg(fmt.Sprintf("Loading LLM_MODELS: %s", config.LLMModels))
+	log.Info().Strs("Loading LLM_MODELS", config.LLMModels)
 	for _, model := range config.LLMModels {
 		fn, ok := llmFuncMap.Load(model)
 		if ok {
 			fnTyped, ok := fn.(func(string, common.Config, string) (string, error))
 			if !ok {
-				log.Error().Msg(fmt.Sprintf("Stored function not of expected type: %T", fn))
+				log.Error().Str("type", reflect.TypeOf(fn).String()).Msg("Stored function not of expected type")
 				continue
 			}
 			// filter out models we don't have an API key for
 			if model == "bard" && len(config.BardApiKey) == 0 {
 				log.Info().Msg("excluding bard, missing api key")
+			} else if model == "claude" && len(config.AnthropicApiKey) == 0 {
+				log.Info().Msg("excluding claude, missing api key")
 			} else if model != "bard" && len(config.OpenAIApiKey) == 0 {
-				log.Info().Msg(fmt.Sprintf("excluding %s, missing api key", model))
+				log.Info().Str("excluding model, missing api key", model)
 			} else {
 				llmRequest := LLMRequest{
 					Prompt: prompt,
@@ -81,16 +84,16 @@ func main() {
 					Model:  model,
 					Fn:     fnTyped,
 				}
-				log.Info().Msg(fmt.Sprintf("Loaded model: %s", llmRequest.Model))
+				log.Info().Str("Loaded model", llmRequest.Model)
 				llmRequests = append(llmRequests, llmRequest)
 			}
 		} else {
-			log.Error().Msg(fmt.Sprintf("Unknown LLM model: %s", model))
+			log.Error().Str("Unknown LLM model", model)
 		}
 	}
 
 	if len(llmRequests) == 0 {
-		log.Error().Msg(fmt.Sprintf("No LLMModels selected that have an API key set: %s", config.LLMModels))
+		log.Error().Strs("models", config.LLMModels).Msg("No LLMModels selected that have an API key set")
 	}
 
 	results := make(chan LLMResponse, len(llmRequests)*2)
@@ -112,9 +115,9 @@ func main() {
 
 	for result := range results {
 		if result.Err == nil {
-			fmt.Println(fmt.Sprintf("\nA(%s): %s", result.Model, result.Output))
+			fmt.Printf("\nA(%s): %s\n", result.Model, result.Output)
 		} else {
-			fmt.Println(fmt.Sprintf("\nA(%s): Error: %s", result.Model, result.Err))
+			fmt.Printf("\nA(%s): Error: %s\n", result.Model, result.Err)
 		}
 		os.Stdout.Sync()
 	}
