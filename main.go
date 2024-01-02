@@ -64,7 +64,7 @@ func main() {
 
 	var llmRequests []LLMRequest
 
-	log.Info().Strs("Loading LLM_MODELS", config.LLMModels)
+	log.Info().Strs("Loading LLM_MODELS", config.LLMModels).Msg("")
 	for _, model := range config.LLMModels {
 		fn, ok := llmFuncMap.Load(model)
 		if ok {
@@ -87,11 +87,11 @@ func main() {
 					Model:  model,
 					Fn:     fnTyped,
 				}
-				log.Info().Str("Loaded model", llmRequest.Model).Msg("")
+				log.Info().Str("model", llmRequest.Model).Msg("Loaded model")
 				llmRequests = append(llmRequests, llmRequest)
 			}
 		} else {
-			log.Error().Str("Unknown LLM model", model)
+			log.Error().Str("model", model).Msg("Unknown LLM model")
 		}
 	}
 
@@ -103,12 +103,13 @@ func main() {
 
 	for _, llmRequest := range llmRequests {
 		wg.Add(1)
-		go func(j *LLMRequest) {
+		go func(j LLMRequest) {
 			defer wg.Done()
+			log.Info().Str("model", j.Model).Msg("Calling j.Fn")
 			output, err := j.Fn(j.Prompt, j.Config, j.Model)
 			results <- LLMResponse{Output: output, Err: err, Model: j.Model}
 			err = common.WriteHistory(config, fmt.Sprintf("A(%s): %s", j.Model, output))
-		}(&llmRequest)
+		}(llmRequest)
 	}
 
 	go func() {

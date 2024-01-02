@@ -39,7 +39,7 @@ func GetChatCompletions(prompt string, config common.Config, model string) (stri
 
 	requestBytes, err := json.Marshal(requestData)
 	if err != nil {
-		log.Error().Str("error marshaling request data", err.Error())
+		log.Error().Str("error", err.Error()).Msg("error marshaling request data")
 		return "", fmt.Errorf("error marshaling request data: %v", err)
 	}
 
@@ -56,30 +56,29 @@ func GetChatCompletions(prompt string, config common.Config, model string) (stri
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Error().Str("error sending request", err.Error())
+		log.Error().Str("error", err.Error()).Msg("error sending request")
 		return "", fmt.Errorf("error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Error().Str("error reading response body", err.Error())
+		log.Error().Str("error", err.Error()).Msg("error reading response body")
 		return "", fmt.Errorf("error reading response body: %v", err)
 	}
 
 	if resp.StatusCode != 200 {
-		log.Info().Msg(fmt.Sprintf("response code: %v", resp.StatusCode))
-		log.Info().Msg(fmt.Sprintf("response body: %v", body))
-		return "", fmt.Errorf("%s", body)
+		log.Error().Int("response code", resp.StatusCode).Str("response body", string(body)).Msg("Claude non-200 response")
+		return "", fmt.Errorf("%s", string(body))
 	}
 
 	var completionResp CompletionResponse
 	if err := json.Unmarshal(body, &completionResp); err != nil {
-		log.Error().Str("error unmarshaling response", err.Error())
+		log.Error().Str("error", err.Error()).Msg("error unmarshaling response")
 		return "", fmt.Errorf("error unmarshaling response: %v", err)
 	}
 
-	log.Info().Str("completionsResp", completionResp.Completion)
+	log.Info().Str("completionsResp", completionResp.Completion).Msg("completionsResp")
 
 	return completionResp.Completion, nil
 }

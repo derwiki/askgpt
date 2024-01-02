@@ -4,12 +4,13 @@ import (
 	"bufio"
 	"encoding/csv"
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 type HistoryRecord struct {
@@ -70,7 +71,7 @@ func HistoryLastNRecords(n int) []HistoryRecord {
 		str := records[i][2]
 
 		record := HistoryRecord{TimestampSec: timestampSec, TokenCount: tokenCount, Line: str}
-		log.Info().Msg(fmt.Sprintf("%d,%d,len(%s)", record.TimestampSec, record.TokenCount, len(record.Line)))
+		log.Info().Int("TimestampSec", record.TimestampSec).Int("TokenCount", record.TokenCount).Int("Line length", len(record.Line)).Msg("HistoryRecord")
 		buffer = append(buffer, record)
 	}
 	return buffer

@@ -5,19 +5,20 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/pkoukk/tiktoken-go"
-	"github.com/rs/zerolog/log"
 	"os"
 	"strings"
+
+	"github.com/pkoukk/tiktoken-go"
+	"github.com/rs/zerolog/log"
 )
 
-func GetPrompt(config Config) string {
+func GetPrompt(config Config) (string, string) {
 	var prompt string
 
 	args := flag.Args()
 	log.Info().Msg(fmt.Sprintf("flag.Args(): %s", args))
 	if len(args) > 0 {
-		prompt = args[0]
+		prompt = strings.TrimSpace(args[0])
 	} else if HasStdinInput() {
 		scanner := bufio.NewScanner(os.Stdin)
 
@@ -32,13 +33,15 @@ func GetPrompt(config Config) string {
 		fmt.Println("error: No prompt found in args or STDIN")
 		UsageAndQuit()
 	}
+
+	origPrompt := prompt
 	// TODO(derwiki) make this model specific
 	PromptModelMax := 4097
 	prompt = config.PromptPrefix + prompt
 	promptTokenCount, err := GetTokenCount(prompt)
 	if promptTokenCount > PromptModelMax {
-		log.Panic().Msg(fmt.Sprintf("Prompt token count exceeds model max: %d/%d", promptTokenCount, PromptModelMax))
-		panic("token count too long")
+		log.Panic().Int("promptTokenCount", promptTokenCount).Int("PromptModelMax", PromptModelMax).Msg("Prompt token count exceeds model max")
+		panic("Token count too long")
 	}
 
 	if !config.SkipHistory {
@@ -46,7 +49,7 @@ func GetPrompt(config Config) string {
 		context := ""
 		runningTokenCount := promptTokenCount
 		for i, record := range lines {
-			log.Debug().Msg(fmt.Sprintf("i: %d, record: %s", i, record.Line))
+			log.Debug().Str("line", record.Line).Int("index", i).Msg("History record")
 
 			if record.TokenCount+runningTokenCount >= PromptModelMax {
 				// nothing
@@ -55,18 +58,19 @@ func GetPrompt(config Config) string {
 				runningTokenCount += record.TokenCount
 			}
 		}
-		log.Info().Msg(fmt.Sprintf("runningTokenCount: %d", runningTokenCount))
+		log.Info().Int("count", runningTokenCount).Msg("runningTokenCount")
 
 		prompt = context + "\n" + prompt
 		err = WriteHistory(config, fmt.Sprintf("Q: %s", prompt))
 		if err != nil {
-			panic("bar")
+			log.Panic().Str("err", err.Error()).Msg("WriteHistory")
+			panic("WriteHistory panic")
 		}
 	} else {
 		log.Info().Msg("SkipHistory set, not building history context")
 	}
-	log.Debug().Msg("prompt: " + prompt)
-	return prompt
+	log.Debug().Str("prompt", prompt).Msg("Prompt")
+	return origPrompt, prompt
 }
 
 func GetTokenCount(line string) (int, error) {

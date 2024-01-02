@@ -9,11 +9,23 @@ This demonstrates the ability to ask follow-up questions using session history:
 ```bash
 $ askgpt --gpt4 "who won the superbowl in 2006?"
 Q: who won the superbowl in 2006?
-A(gpt-4-1106-preview): The Pittsburgh Steelers won Super Bowl XL in 2006. They defeated the Seattle Seahawks with a score of 21-10. The game took place on February 5, 2006, at Ford Field in Detroit, Michigan. It was the Steelers' fifth Super Bowl victory, and wide receiver Hines Ward was named the Super Bowl MVP.
+A(gpt-4-1106-preview): The Pittsburgh Steelers won Super Bowl XL (40) in 2006, defeating the Seattle Seahawks with a score of 21-10. The game was played on February 5, 2006, at Ford Field in Detroit, Michigan. This victory earned the Steelers their fifth Super Bowl title at the time.
 
-$ askgpt --gpt4 "and in 2008?"
-Q: and in 2008?
-A(gpt-4-1106-preview): In 2008, the New York Giants won Super Bowl XLII. They defeated the New England Patriots with a score of 17-14. The game took place on February 3, 2008, at the University of Phoenix Stadium in Glendale, Arizona. It was notably the game where the Patriots' attempt at a perfect season was ended, and Giants' wide receiver David Tyree made the famous "Helmet Catch" during the Giants' game-winning drive. The MVP of the game was Giants' quarterback Eli Manning.
+$ askgpt --gpt4 "and 2008?"
+Q: and 2008?
+A(gpt-4-1106-preview): In 2008, the New York Giants won Super Bowl XLII (42). They defeated the New England Patriots with a score of 17-14. The game took place on February 3, 2008, at the University of Phoenix Stadium in Glendale, Arizona. This win was particularly notable as it ended the Patriots' quest for a perfect season after they had won all their regular season and playoff games leading up to the Super Bowl.
+
+$ askgpt "and 2009?"
+Q: and 2009?
+A(bard): Pittsburgh Steelers
+A(gpt-4-1106-preview): In 2009, the Pittsburgh Steelers won Super Bowl XLIII (43). They defeated the Arizona Cardinals with a score of 27-23. The game was played on February 1, 2009, at Raymond James Stadium in Tampa, Florida. With this victory, the Steelers secured their sixth Super Bowl title, which at the time made them the franchise with the most Super Bowl wins.
+A(claude-2.1):  The Pittsburgh Steelers won Super Bowl XLIII (43) in 2009, defeating the Arizona Cardinals by a score of 27-23. The game was played on February 1, 2009 at Raymond James Stadium in Tampa, Florida. This was the Steelers' sixth Super Bowl championship in franchise history.
+
+So to summarize:
+
+2006 Super Bowl: Pittsburgh Steelers
+2008 Super Bowl: New York Giants
+2009 Super Bowl: Pittsburgh Steelers
 ```
 
 

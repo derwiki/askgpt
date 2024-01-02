@@ -38,7 +38,6 @@ func LoadConfig() (Config, error) {
 	flag.BoolVar(&useBard, "bard", false, "If set, shortcut to LLM_MODELS=bard")
 	flag.BoolVar(&useClaude, "claude", false, "If set, shortcut to LLM_MODELS=claude-2.1")
 	flag.Parse()
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	log.Info().
 		Bool("useInfo", useInfo).
 		Bool("skipHistory", skipHistory).
@@ -72,7 +71,7 @@ func LoadConfig() (Config, error) {
 	log.Info().Int("length", len(config.AnthropicApiKey)).Msg("config.AnthropicApiKey")
 
 	// read LLM models as an array
-	log.Info().Str("LLM_MODELS", os.Getenv("LLM_MODELS")).Msg("")
+	log.Info().Str("LLM_MODELS", os.Getenv("LLM_MODELS")).Msg("LLM_MODELS")
 	models := strings.Split(os.Getenv("LLM_MODELS"), ",")
 	if models[0] != "" {
 		config.LLMModels = models
@@ -81,7 +80,7 @@ func LoadConfig() (Config, error) {
 	}
 
 	maxTokensStr := os.Getenv("MAX_TOKENS")
-	log.Info().Str("maxTokenStr", maxTokensStr).Msg("")
+	log.Info().Str("maxTokenStr", maxTokensStr).Msg("MAX_TOKENS")
 	if maxTokensStr == "" {
 		config.MaxTokens = 200
 	} else {

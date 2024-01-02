@@ -41,7 +41,7 @@ func GetChatCompletions(content string, config common.Config, model string) (str
 	)
 
 	if err != nil {
-		log.Error().Str("ChatCompletion error", err.Error())
+		log.Error().Str("error", err.Error()).Msg("ChatCompletion error")
 		return "", err
 	}
 
