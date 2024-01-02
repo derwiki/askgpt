@@ -11,11 +11,11 @@ $ askgpt --gpt4 "who won the superbowl in 2006?"
 A(gpt-4):The Super Bowl in 2006 (Super Bowl XL) was won by the Pittsburgh Steelers.
 
 # you can ask follow up questions that recall earlier parts of the conversation
-$ askgpt --gpt4 "and in 2008?"
+$ askgpt --gpt4 "and in 2008?"                  
 A(gpt-4): The Super Bowl in 2008 (Super Bowl XLII) was won by the New York Giants.
 
 # and retain that conversation across different models
-$ askgpt "and in 2009?"
+$ askgpt "and in 2009?" 
 A(text-davinci-003): The Super Bowl in 2009 (Super Bowl XLIII) was won by the Pittsburgh Steelers.
 A(gpt-4): The Super Bowl in 2009 (Super Bowl XLIII) was won by the Pittsburgh Steelers.
 A(gpt-3.5-turbo): The Super Bowl in 2009 (Super Bowl XLIII) was won by the Pittsburgh Steelers.
