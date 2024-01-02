@@ -20,6 +20,7 @@ type Config struct {
 	LLMModels        []string
 	SkipHistory      bool
 	HistoryLineCount int
+	UseInfo          bool
 }
 
 var defaultLLMModels = []string{openai.GPT4TurboPreview, "bard", "claude-2.1"}
@@ -37,19 +38,22 @@ func LoadConfig() (Config, error) {
 	flag.BoolVar(&useBard, "bard", false, "If set, shortcut to LLM_MODELS=bard")
 	flag.BoolVar(&useClaude, "claude", false, "If set, shortcut to LLM_MODELS=claude-2.1")
 	flag.Parse()
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	log.Info().
 		Bool("useInfo", useInfo).
 		Bool("skipHistory", skipHistory).
 		Bool("useGpt4", useGpt4).
 		Bool("useBard", useBard).
-		Bool("useClaude", useClaude)
+		Bool("useClaude", useClaude).
+		Msg("Command line args")
 
 	if useInfo {
+		log.Info().Msg("in LoadConfig(), setting global log level to InfoLevel")
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 
 	log.Info().Msg("config LoadConfig() enter")
-	config := Config{}
+	config := Config{UseInfo: useInfo}
 
 	config.PromptPrefix = os.Getenv("PROMPT_PREFIX")
 	log.Info().Str("PromptPrefix", config.PromptPrefix)
