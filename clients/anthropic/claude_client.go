@@ -26,7 +26,7 @@ type CompletionResponse struct {
 
 func GetChatCompletions(prompt string, config common.Config, model string) (string, error) {
 	if config.AnthropicApiKey == "" {
-		log.Error().Msg(fmt.Sprintf("Anthropic API key is not set in the config"))
+		log.Error().Msg("Anthropic API key is not set in the config")
 		return "", errors.New("Anthropic API key is not set in the config")
 	}
 
@@ -39,14 +39,14 @@ func GetChatCompletions(prompt string, config common.Config, model string) (stri
 
 	requestBytes, err := json.Marshal(requestData)
 	if err != nil {
-		log.Error().Str("error marshaling request data", err.Error()).Msg("error marshaling request data")
+		log.Error().Str("error marshaling request data", err.Error())
 		return "", fmt.Errorf("error marshaling request data: %v", err)
 	}
 
 	BaseURL := "https://api.anthropic.com/v1/complete"
 	req, err := http.NewRequest("POST", BaseURL, bytes.NewBuffer(requestBytes))
 	if err != nil {
-		log.Error().Str("error creating request", err.Error()).Msg("error creating request")
+		log.Error().Str("error creating request", err.Error())
 		return "", fmt.Errorf("error creating request: %v", err)
 	}
 
@@ -56,14 +56,14 @@ func GetChatCompletions(prompt string, config common.Config, model string) (stri
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Error().Str("error sending request", err.Error()).Msg("error sending request")
+		log.Error().Str("error sending request", err.Error())
 		return "", fmt.Errorf("error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Error().Str("error reading response body", err.Error()).Msg("error reading response body")
+		log.Error().Str("error reading response body", err.Error())
 		return "", fmt.Errorf("error reading response body: %v", err)
 	}
 
@@ -75,11 +75,11 @@ func GetChatCompletions(prompt string, config common.Config, model string) (stri
 
 	var completionResp CompletionResponse
 	if err := json.Unmarshal(body, &completionResp); err != nil {
-		log.Error().Str("error unmarshaling response", err.Error()).Msg("error unmarshaling response")
+		log.Error().Str("error unmarshaling response", err.Error())
 		return "", fmt.Errorf("error unmarshaling response: %v", err)
 	}
 
-	log.Info().Msg(fmt.Sprintf("completionsResp: %s", completionResp.Completion))
+	log.Info().Str("completionsResp", completionResp.Completion)
 
 	return completionResp.Completion, nil
 }
