@@ -136,7 +136,7 @@ func main() {
 	for result := range results {
 		if result.Err == nil {
 			duration := modelDurations[result.Model]
-			fmt.Printf("A(%s/%s): %s\n", result.Model, duration, result.Output)
+			fmt.Printf("A(%s/%.0fms): %s\n", result.Model, duration.Seconds()*1000, result.Output)
 		} else {
 			fmt.Printf("A(%s): Error: %s\n", result.Model, result.Err)
 		}
