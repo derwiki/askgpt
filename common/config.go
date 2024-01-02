@@ -56,7 +56,7 @@ func LoadConfig() (Config, error) {
 	config := Config{UseInfo: useInfo}
 
 	config.PromptPrefix = os.Getenv("PROMPT_PREFIX")
-	log.Info().Str("PromptPrefix", config.PromptPrefix)
+	log.Info().Str("PromptPrefix", config.PromptPrefix).Msg("")
 	num, err := strconv.Atoi(os.Getenv("HISTORY_LINE_COUNT"))
 	if err != nil {
 		config.HistoryLineCount = 10 // default
@@ -65,14 +65,14 @@ func LoadConfig() (Config, error) {
 	}
 
 	config.OpenAIApiKey = os.Getenv("OPENAI_API_KEY")
-	log.Info().Int("config.OpenAIApiKey length", len(config.OpenAIApiKey))
+	log.Info().Int("length", len(config.OpenAIApiKey)).Msg("config.OpenAIApiKey")
 	config.BardApiKey = os.Getenv("BARDAI_API_KEY")
-	log.Info().Int("config.BardApiKey length", len(config.BardApiKey))
+	log.Info().Int("length", len(config.BardApiKey)).Msg("config.BardApiKey")
 	config.AnthropicApiKey = os.Getenv("ANTHROPIC_API_KEY")
-	log.Info().Int("config.AnthropicApiKey length", len(config.BardApiKey))
+	log.Info().Int("length", len(config.AnthropicApiKey)).Msg("config.AnthropicApiKey")
 
 	// read LLM models as an array
-	log.Info().Str("config LLM_MODELS", os.Getenv("LLM_MODELS"))
+	log.Info().Str("LLM_MODELS", os.Getenv("LLM_MODELS")).Msg("")
 	models := strings.Split(os.Getenv("LLM_MODELS"), ",")
 	if models[0] != "" {
 		config.LLMModels = models
@@ -81,7 +81,7 @@ func LoadConfig() (Config, error) {
 	}
 
 	maxTokensStr := os.Getenv("MAX_TOKENS")
-	log.Info().Str("config maxTokenStr", maxTokensStr)
+	log.Info().Str("maxTokenStr", maxTokensStr).Msg("")
 	if maxTokensStr == "" {
 		config.MaxTokens = 200
 	} else {
